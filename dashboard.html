@@ -114,6 +114,15 @@
     .status.atencao  { background: #fef9c3; color: #854d0e; }
     .status.em_dia   { background: #dcfce7; color: #166534; }
 
+    .badge-status {
+      display: inline-block; padding: 3px 10px; border-radius: 6px;
+      font-size: .7rem; font-weight: 600; text-transform: uppercase;
+      letter-spacing: .5px;
+    }
+    .badge-status.ativo { background: #e0f2fe; color: #0369a1; }
+    .badge-status.manutencao { background: #fef08a; color: #854d0e; }
+    .badge-status.descartado { background: #f3f4f6; color: #4b5563; }
+
     .acoes-tabela { display: flex; gap: 6px; flex-wrap: wrap; }
     .btn-acao {
       background: transparent; border: 1px solid var(--cinza-borda);
@@ -124,6 +133,16 @@
     .btn-acao.primario:hover { background: var(--vermelho); color: #fff; }
     .btn-acao.neutro { color: var(--texto-suave); }
     .btn-acao.neutro:hover { background: var(--cinza-borda); }
+    
+    .btn-acao.icon {
+      padding: 6px 8px; font-size: 1rem; line-height: 1;
+      border-radius: 6px;
+    }
+    .btn-acao.excluir { color: #dc2626; border-color: #fecaca; }
+    .btn-acao.excluir:hover { background: #fee2e2; border-color: #dc2626; }
+    .btn-acao.editar { color: #2563eb; border-color: #bfdbfe; }
+    .btn-acao.editar:hover { background: #eff6ff; border-color: #2563eb; }
+    .btn-acao:disabled { opacity: .4; cursor: not-allowed; }
 
     /* ---------- BOTÕES ---------- */
     .btn-primario {
@@ -311,25 +330,26 @@
           <thead>
             <tr>
               <th>Nº</th><th>Tipo</th><th>Localização</th><th>Vence em</th>
-              <th>Situação</th><th>Ações</th>
+              <th>Situação</th><th>Status</th><th>Ações</th>
             </tr>
           </thead>
           <tbody id="tabela-extintores">
-            <tr><td colspan="6" class="vazio">Carregando extintores...</td></tr>
+            <tr><td colspan="7" class="vazio">Carregando extintores...</td></tr>
           </tbody>
         </table>
       </div>
     </section>
   </main>
 
-  <!-- ============ MODAL: NOVO EXTINTOR ============ -->
+  <!-- ============ MODAL: NOVO/EDITAR EXTINTOR ============ -->
   <div class="modal-overlay" id="modal-extintor">
     <div class="modal">
       <div class="modal-header">
-        <h3>➕ Novo Extintor</h3>
+        <h3 id="modal-extintor-titulo">➕ Novo Extintor</h3>
         <button class="modal-close" data-fechar="modal-extintor">✕</button>
       </div>
       <form id="form-extintor">
+        <input type="hidden" id="f-id" />
         <div class="modal-body">
           <div class="form-grid">
             <div class="campo">
@@ -384,6 +404,16 @@
             <div class="campo">
               <label for="f-teste">Data Últ. Teste Hidrostático *</label>
               <input type="date" id="f-teste" required />
+            </div>
+
+            <!-- Status só aparece na edição -->
+            <div class="campo full" id="campo-status" style="display:none;">
+              <label for="f-status">Status do Equipamento</label>
+              <select id="f-status">
+                <option value="ativo">Ativo (Em uso)</option>
+                <option value="manutencao">Em Manutenção</option>
+                <option value="descartado">Descartado / Inativo</option>
+              </select>
             </div>
 
             <div class="campo full">
@@ -549,9 +579,9 @@
 
     function renderizarKPIs() {
       const total = extintores.length;
-      const emDia = extintores.filter(e => situacao(e) === 'em_dia').length;
-      const critico = extintores.filter(e => ['critico','atencao'].includes(situacao(e))).length;
-      const vencido = extintores.filter(e => situacao(e) === 'vencido').length;
+      const emDia = extintores.filter(e => situacao(e) === 'em_dia' && e.status !== 'descartado').length;
+      const critico = extintores.filter(e => ['critico','atencao'].includes(situacao(e)) && e.status !== 'descartado').length;
+      const vencido = extintores.filter(e => situacao(e) === 'vencido' && e.status !== 'descartado').length;
 
       document.getElementById('kpi-total').textContent = total;
       document.getElementById('kpi-em-dia').innerHTML = `${emDia} <small>(${total ? Math.round(emDia/total*100) : 0}%)</small>`;
@@ -560,10 +590,11 @@
     }
 
     function renderizarGrafico() {
-      const emDia = extintores.filter(e => situacao(e) === 'em_dia').length;
-      const atencao = extintores.filter(e => situacao(e) === 'atencao').length;
-      const critico = extintores.filter(e => situacao(e) === 'critico').length;
-      const vencido = extintores.filter(e => situacao(e) === 'vencido').length;
+      const ativos = extintores.filter(e => e.status !== 'descartado');
+      const emDia = ativos.filter(e => situacao(e) === 'em_dia').length;
+      const atencao = ativos.filter(e => situacao(e) === 'atencao').length;
+      const critico = ativos.filter(e => situacao(e) === 'critico').length;
+      const vencido = ativos.filter(e => situacao(e) === 'vencido').length;
 
       const dados = [emDia, atencao, critico, vencido];
       const cores = ['#16a34a', '#eab308', '#f59e0b', '#dc2626'];
@@ -599,36 +630,54 @@
       const tbody = document.getElementById('tabela-extintores');
       const lista = filtroAtual === 'todos'
         ? extintores
-        : extintores.filter(e => situacao(e) === filtroAtual);
+        : extintores.filter(e => situacao(e) === filtroAtual && e.status !== 'descartado');
 
       if (!lista.length) {
-        tbody.innerHTML = '<tr><td colspan="6" class="vazio">Nenhum extintor encontrado.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="7" class="vazio">Nenhum extintor encontrado.</td></tr>';
         return;
       }
 
-      tbody.innerHTML = lista.map(e => `
-        <tr>
+      tbody.innerHTML = lista.map(e => {
+        const st = e.status || 'ativo';
+        const isDescartado = st === 'descartado';
+        const txtSt = { ativo: 'Ativo', manutencao: 'Manutenção', descartado: 'Inativo' }[st];
+
+        return `
+        <tr style="${isDescartado ? 'opacity: 0.5;' : ''}">
           <td><strong>${e.numero}</strong></td>
           <td>${e.tipo}</td>
           <td>${e.setor ? e.setor + (e.local ? ' - ' + e.local : '') : (e.local || '-')}</td>
-          <td style="color:${corDias(e.data_validade)};font-weight:600;">
-            ${textoDias(e.data_validade)}
+          <td style="color:${isDescartado ? 'var(--texto-suave)' : corDias(e.data_validade)};font-weight:600;">
+            ${isDescartado ? '-' : textoDias(e.data_validade)}
           </td>
-          <td><span class="status ${situacao(e)}">${labelSituacao(situacao(e))}</span></td>
+          <td>
+            ${isDescartado 
+              ? '<span class="status" style="background:#f3f4f6;color:#6b7280;">—</span>' 
+              : `<span class="status ${situacao(e)}">${labelSituacao(situacao(e))}</span>`}
+          </td>
+          <td><span class="badge-status ${st}">${txtSt}</span></td>
           <td>
             <div class="acoes-tabela">
-              <button class="btn-acao primario" data-inspecionar="${e.id}" data-numero="${e.numero}">Inspecionar</button>
+              <button class="btn-acao primario" data-inspecionar="${e.id}" data-numero="${e.numero}" ${isDescartado ? 'disabled' : ''}>Inspecionar</button>
               <button class="btn-acao neutro" data-historico="${e.id}" data-numero="${e.numero}">Histórico</button>
+              <button class="btn-acao icon editar" data-editar="${e.id}" title="Editar">✏️</button>
+              <button class="btn-acao icon excluir" data-excluir="${e.id}" data-numero="${e.numero}" title="Excluir">🗑️</button>
             </div>
           </td>
         </tr>
-      `).join('');
+      `}).join('');
 
       tbody.querySelectorAll('[data-inspecionar]').forEach(b => {
         b.addEventListener('click', () => abrirInspecao(b.dataset.inspecionar, b.dataset.numero));
       });
       tbody.querySelectorAll('[data-historico]').forEach(b => {
         b.addEventListener('click', () => abrirHistorico(b.dataset.historico, b.dataset.numero));
+      });
+      tbody.querySelectorAll('[data-editar]').forEach(b => {
+        b.addEventListener('click', () => abrirEdicao(b.dataset.editar));
+      });
+      tbody.querySelectorAll('[data-excluir]').forEach(b => {
+        b.addEventListener('click', () => excluirExtintor(b.dataset.excluir, b.dataset.numero));
       });
     }
 
@@ -652,105 +701,166 @@
       });
       if (!q) { renderizarTabela(); return; }
       if (!filtrados.length) {
-        tbody.innerHTML = '<tr><td colspan="6" class="vazio">Nenhum resultado.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="7" class="vazio">Nenhum resultado.</td></tr>';
         return;
       }
-      tbody.innerHTML = filtrados.map(e => `
-        <tr>
+      
+      tbody.innerHTML = filtrados.map(e => {
+        const st = e.status || 'ativo';
+        const isDescartado = st === 'descartado';
+        const txtSt = { ativo: 'Ativo', manutencao: 'Manutenção', descartado: 'Inativo' }[st];
+
+        return `
+        <tr style="${isDescartado ? 'opacity: 0.5;' : ''}">
           <td><strong>${e.numero}</strong></td>
           <td>${e.tipo}</td>
           <td>${e.setor ? e.setor + (e.local ? ' - ' + e.local : '') : (e.local || '-')}</td>
-          <td style="color:${corDias(e.data_validade)};font-weight:600;">${textoDias(e.data_validade)}</td>
-          <td><span class="status ${situacao(e)}">${labelSituacao(situacao(e))}</span></td>
+          <td style="color:${isDescartado ? 'var(--texto-suave)' : corDias(e.data_validade)};font-weight:600;">
+            ${isDescartado ? '-' : textoDias(e.data_validade)}
+          </td>
+          <td>
+            ${isDescartado 
+              ? '<span class="status" style="background:#f3f4f6;color:#6b7280;">—</span>' 
+              : `<span class="status ${situacao(e)}">${labelSituacao(situacao(e))}</span>`}
+          </td>
+          <td><span class="badge-status ${st}">${txtSt}</span></td>
           <td>
             <div class="acoes-tabela">
-              <button class="btn-acao primario" data-inspecionar="${e.id}" data-numero="${e.numero}">Inspecionar</button>
+              <button class="btn-acao primario" data-inspecionar="${e.id}" data-numero="${e.numero}" ${isDescartado ? 'disabled' : ''}>Inspecionar</button>
               <button class="btn-acao neutro" data-historico="${e.id}" data-numero="${e.numero}">Histórico</button>
+              <button class="btn-acao icon editar" data-editar="${e.id}" title="Editar">✏️</button>
+              <button class="btn-acao icon excluir" data-excluir="${e.id}" data-numero="${e.numero}" title="Excluir">🗑️</button>
             </div>
           </td>
         </tr>
-      `).join('');
+      `}).join('');
+      
       tbody.querySelectorAll('[data-inspecionar]').forEach(b => {
         b.addEventListener('click', () => abrirInspecao(b.dataset.inspecionar, b.dataset.numero));
       });
       tbody.querySelectorAll('[data-historico]').forEach(b => {
         b.addEventListener('click', () => abrirHistorico(b.dataset.historico, b.dataset.numero));
       });
+      tbody.querySelectorAll('[data-editar]').forEach(b => {
+        b.addEventListener('click', () => abrirEdicao(b.dataset.editar));
+      });
+      tbody.querySelectorAll('[data-excluir]').forEach(b => {
+        b.addEventListener('click', () => excluirExtintor(b.dataset.excluir, b.dataset.numero));
+      });
     });
 
-    // ---------- NOVO EXTINTOR ----------
+    // ---------- NOVO EXTINTOR / EDITAR ----------
     document.getElementById('btn-novo-extintor').addEventListener('click', () => {
       document.getElementById('form-extintor').reset();
+      document.getElementById('f-id').value = '';
+      document.getElementById('modal-extintor-titulo').textContent = '➕ Novo Extintor';
+      document.getElementById('campo-status').style.display = 'none';
+      document.getElementById('btn-salvar-extintor').textContent = 'Salvar Extintor';
       abrirModal('modal-extintor');
     });
+
+    async function abrirEdicao(id) {
+      const ex = extintores.find(e => e.id === id);
+      if (!ex) return;
+
+      document.getElementById('f-id').value = ex.id;
+      document.getElementById('f-numero').value = ex.numero;
+      document.getElementById('f-tipo').value = ex.tipo;
+      document.getElementById('f-capacidade').value = ex.capacidade || '';
+      document.getElementById('f-setor').value = ex.setor || '';
+      document.getElementById('f-local').value = ex.local || '';
+      document.getElementById('f-manutencao').value = ex.data_fabricacao || '';
+      document.getElementById('f-teste').value = ex.data_teste_hidro || '';
+      document.getElementById('f-obs').value = ex.observacoes || '';
+      
+      document.getElementById('campo-status').style.display = 'block';
+      document.getElementById('f-status').value = ex.status || 'ativo';
+
+      document.getElementById('modal-extintor-titulo').textContent = `✏️ Editar Extintor ${ex.numero}`;
+      document.getElementById('btn-salvar-extintor').textContent = 'Atualizar Extintor';
+      abrirModal('modal-extintor');
+    }
 
     document.getElementById('form-extintor').addEventListener('submit', async (e) => {
       e.preventDefault();
       const btn = document.getElementById('btn-salvar-extintor');
+      const idEdicao = document.getElementById('f-id').value;
       btn.disabled = true;
-      btn.textContent = 'Calculando e Salvando...';
+      btn.textContent = 'Processando...';
 
-      // 1. Pegar as datas informadas
       const dataManutencaoStr = document.getElementById('f-manutencao').value;
       const dataTesteStr = document.getElementById('f-teste').value;
 
-      // 2. Calcular os vencimentos (Manutenção = +1 ano | Teste = +5 anos)
-      const dManut = new Date(dataManutencaoStr + 'T12:00:00'); // T12 evita bug de fuso horário
+      const dManut = new Date(dataManutencaoStr + 'T12:00:00');
       dManut.setFullYear(dManut.getFullYear() + 1);
 
       const dTeste = new Date(dataTesteStr + 'T12:00:00');
       dTeste.setFullYear(dTeste.getFullYear() + 5);
 
-      // 3. Descobrir qual vence primeiro (a data mais antiga)
       const vencimentoFinal = dManut < dTeste ? dManut : dTeste;
-      
-      // Formatar para YYYY-MM-DD para o Supabase
       const dataValidadeFinal = vencimentoFinal.toISOString().split('T')[0];
 
-      // 4. Montar o objeto
-      const novo = {
-        user_id: user.id,
+      const dados = {
         numero: document.getElementById('f-numero').value.trim(),
         tipo: document.getElementById('f-tipo').value,
         capacidade: document.getElementById('f-capacidade').value,
         setor: document.getElementById('f-setor').value.trim() || null,
         local: document.getElementById('f-local').value.trim() || null,
-        
-        // Datas técnicas
-        data_fabricacao: dataManutencaoStr, // Usando o campo existente para a última manutenção
+        data_fabricacao: dataManutencaoStr,
         data_teste_hidro: dataTesteStr,
-        
-        // Data de vencimento calculada
-        data_validade: dataValidadeFinal, 
-        
+        data_validade: dataValidadeFinal,
         observacoes: document.getElementById('f-obs').value.trim() || null
       };
 
-      const { error } = await supabase.from('extintores').insert(novo);
+      let error;
+
+      if (idEdicao) {
+        dados.status = document.getElementById('f-status').value;
+        const { error: err } = await supabase.from('extintores').update(dados).eq('id', idEdicao);
+        error = err;
+      } else {
+        dados.user_id = user.id;
+        dados.status = 'ativo';
+        const { error: err } = await supabase.from('extintores').insert(dados);
+        error = err;
+      }
 
       btn.disabled = false;
-      btn.textContent = 'Salvar Extintor';
+      btn.textContent = idEdicao ? 'Atualizar Extintor' : 'Salvar Extintor';
 
       if (error) {
         console.error(error);
-        toast('Erro ao salvar: ' + error.message, 'erro');
+        toast('Erro: ' + error.message, 'erro');
         return;
       }
 
-      // Mostrar feedback de qual data venceu
-      const motivo = dManut < dTeste ? 'Manutenção (+1 ano)' : 'Teste Hidrostático (+5 anos)';
-      toast(`✅ Extintor salvo! Vence em ${dataValidadeFinal.split('-').reverse().join('/')} (${motivo})`);
-      
+      toast(idEdicao ? '✅ Extintor atualizado!' : '✅ Extintor cadastrado!');
       fecharModal('modal-extintor');
       await carregarExtintores();
     });
+
+    // ---------- EXCLUIR ----------
+    async function excluirExtintor(id, numero) {
+      if (!confirm(`Tem certeza que deseja excluir o extintor ${numero}? Esta ação não pode ser desfeita.`)) {
+        return;
+      }
+
+      const { error } = await supabase.from('extintores').delete().eq('id', id);
+
+      if (error) {
+        toast('Erro ao excluir: ' + error.message, 'erro');
+        return;
+      }
+
+      toast('🗑️ Extintor excluído!');
+      await carregarExtintores();
+    }
 
     // ---------- INSPEÇÃO ----------
     function abrirInspecao(id, numero) {
       extintorEmInspecao = id;
       document.getElementById('insp-numero').textContent = numero;
       document.getElementById('form-inspecao').reset();
-      // Reset todos os checkboxes para marcados
       document.querySelectorAll('#checklist input[type=checkbox]').forEach(c => c.checked = true);
       abrirModal('modal-inspecao');
     }
