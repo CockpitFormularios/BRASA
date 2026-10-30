@@ -23,27 +23,28 @@
       min-height: 100vh;
     }
 
-    /* HEADER */
+    /* ---------- HEADER ---------- */
     header {
       background: #fff;
       border-bottom: 1px solid var(--cinza-borda);
       padding: 12px 24px;
       display: flex;
       align-items: center;
-      gap: 20px;
+      gap: 16px;
       position: sticky;
       top: 0;
       z-index: 100;
+      flex-wrap: wrap;
     }
     .logo { font-size: 1.25rem; font-weight: 800; color: var(--vermelho); }
     .busca {
-      flex: 1; max-width: 420px;
+      flex: 1; max-width: 360px;
       padding: 8px 14px;
       border: 1px solid var(--cinza-borda);
       border-radius: 8px; font-size: .9rem; outline: none;
     }
     .busca:focus { border-color: var(--vermelho); }
-    .header-right { margin-left: auto; display: flex; align-items: center; gap: 18px; }
+    .header-right { margin-left: auto; display: flex; align-items: center; gap: 14px; }
     .notif { position: relative; cursor: pointer; font-size: 1.2rem; }
     .notif .badge {
       position: absolute; top: -4px; right: -6px;
@@ -66,57 +67,39 @@
     }
     .btn-sair:hover { background: var(--vermelho); color: #fff; border-color: var(--vermelho); }
 
-    /* MAIN */
+    /* ---------- MAIN ---------- */
     main {
       padding: 24px; max-width: 1400px; margin: 0 auto;
       display: flex; flex-direction: column; gap: 24px;
     }
 
-    /* KPIs */
-    .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; }
+    /* ---------- KPIs ---------- */
+    .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; }
     .kpi {
-      background: #fff; border-radius: 12px; padding: 20px;
+      background: #fff; border-radius: 12px; padding: 18px;
       box-shadow: var(--sombra); border-left: 5px solid var(--cinza-borda);
-      display: flex; align-items: center; gap: 16px;
-      transition: transform .15s, box-shadow .15s;
+      display: flex; align-items: center; gap: 14px;
     }
-    .kpi:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(0,0,0,.1); }
     .kpi.a { border-left-color: var(--vermelho); }
     .kpi.v { border-left-color: #16a34a; }
     .kpi.l { border-left-color: var(--laranja); }
     .kpi.r { border-left-color: #dc2626; }
     .kpi-icon {
-      font-size: 1.9rem; width: 48px; height: 48px;
+      font-size: 1.7rem; width: 44px; height: 44px;
       border-radius: 10px; display: flex; align-items: center; justify-content: center;
       background: var(--cinza);
     }
-    .kpi-info .valor { font-size: 1.75rem; font-weight: 700; line-height: 1; }
-    .kpi-info .valor small { font-size: .85rem; font-weight: 500; color: var(--texto-suave); margin-left: 4px; }
-    .kpi-info .label { font-size: .8rem; color: var(--texto-suave); margin-top: 4px; }
+    .kpi-info .valor { font-size: 1.6rem; font-weight: 700; line-height: 1; }
+    .kpi-info .valor small { font-size: .8rem; font-weight: 500; color: var(--texto-suave); margin-left: 4px; }
+    .kpi-info .label { font-size: .78rem; color: var(--texto-suave); margin-top: 4px; }
 
-    /* CARDS */
+    /* ---------- CARDS ---------- */
     .card { background: #fff; border-radius: 12px; padding: 20px; box-shadow: var(--sombra); }
     .card h2 { font-size: 1rem; font-weight: 600; margin-bottom: 16px; }
     .grid-meio { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
     .chart-wrap { position: relative; height: 240px; }
 
-    .progresso-info { display: flex; justify-content: space-between; font-size: .85rem; color: var(--texto-suave); margin-bottom: 8px; }
-    .barra { height: 14px; background: var(--cinza); border-radius: 999px; overflow: hidden; margin-bottom: 16px; }
-    .barra > div { height: 100%; background: linear-gradient(90deg, #16a34a, #22c55e); border-radius: 999px; }
-    .legenda { display: flex; gap: 20px; flex-wrap: wrap; font-size: .85rem; margin-bottom: 20px; }
-    .dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 6px; }
-    .dot.v { background: #16a34a; }
-    .dot.l { background: var(--laranja); }
-    .dot.r { background: #dc2626; }
-    .btn-primario {
-      background: linear-gradient(135deg, var(--vermelho), var(--laranja));
-      color: #fff; border: none; padding: 12px 24px;
-      border-radius: 8px; font-size: .95rem; font-weight: 600;
-      cursor: pointer; transition: transform .15s, filter .15s;
-    }
-    .btn-primario:hover { transform: translateY(-1px); filter: brightness(1.05); }
-
-    /* TABELA */
+    /* ---------- TABELA ---------- */
     .card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; flex-wrap: wrap; gap: 12px; }
     .filtros { display: flex; gap: 8px; flex-wrap: wrap; }
     .filtros button {
@@ -128,26 +111,141 @@
     table { width: 100%; border-collapse: collapse; font-size: .88rem; }
     thead th {
       text-align: left; padding: 10px 12px; color: var(--texto-suave);
-      font-weight: 600; font-size: .78rem; text-transform: uppercase;
+      font-weight: 600; font-size: .75rem; text-transform: uppercase;
       border-bottom: 1px solid var(--cinza-borda);
     }
-    tbody td { padding: 12px; border-bottom: 1px solid var(--cinza-borda); }
+    tbody td { padding: 12px; border-bottom: 1px solid var(--cinza-borda); vertical-align: middle; }
     tbody tr:hover { background: #fafafa; }
-    .status { display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: .75rem; font-weight: 600; }
-    .status.r { background: #fee2e2; color: #991b1b; }
-    .status.l { background: #ffedd5; color: #9a3412; }
+    .status { display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: .72rem; font-weight: 600; }
+    .status.vencido { background: #fee2e2; color: #991b1b; }
+    .status.critico { background: #ffedd5; color: #9a3412; }
+    .status.atencao  { background: #fef9c3; color: #854d0e; }
+    .status.em_dia   { background: #dcfce7; color: #166534; }
+
+    .acoes-tabela { display: flex; gap: 6px; flex-wrap: wrap; }
     .btn-acao {
       background: transparent; border: 1px solid var(--cinza-borda);
-      padding: 5px 12px; border-radius: 6px; font-size: .8rem; cursor: pointer;
-      color: var(--vermelho); font-weight: 600;
+      padding: 5px 10px; border-radius: 6px; font-size: .75rem; cursor: pointer;
+      font-weight: 600; transition: all .15s;
     }
-    .btn-acao:hover { background: var(--vermelho); color: #fff; border-color: var(--vermelho); }
+    .btn-acao.primario { color: var(--vermelho); border-color: var(--vermelho); }
+    .btn-acao.primario:hover { background: var(--vermelho); color: #fff; }
+    .btn-acao.neutro { color: var(--texto-suave); }
+    .btn-acao.neutro:hover { background: var(--cinza-borda); }
 
+    /* ---------- BOTÕES ---------- */
+    .btn-primario {
+      background: linear-gradient(135deg, var(--vermelho), var(--laranja));
+      color: #fff; border: none; padding: 10px 20px;
+      border-radius: 8px; font-size: .9rem; font-weight: 600;
+      cursor: pointer; transition: transform .15s, filter .15s;
+      display: inline-flex; align-items: center; gap: 6px;
+    }
+    .btn-primario:hover { transform: translateY(-1px); filter: brightness(1.05); }
+    .btn-primario:disabled { opacity: .6; cursor: not-allowed; transform: none; }
+
+    .btn-secundario {
+      background: transparent; color: var(--texto-suave);
+      border: 1px solid var(--cinza-borda); padding: 10px 20px;
+      border-radius: 8px; font-size: .9rem; font-weight: 600;
+      cursor: pointer;
+    }
+    .btn-secundario:hover { background: var(--cinza); }
+
+    /* ---------- MODAL ---------- */
+    .modal-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,.6);
+      display: none; align-items: center; justify-content: center;
+      z-index: 1000; padding: 20px;
+    }
+    .modal-overlay.aberto { display: flex; }
+    .modal {
+      background: #fff; border-radius: 16px; width: 100%;
+      max-width: 560px; max-height: 90vh;
+      display: flex; flex-direction: column;
+      box-shadow: 0 20px 50px rgba(0,0,0,.3);
+      animation: slideUp .2s ease;
+    }
+    @keyframes slideUp {
+      from { transform: translateY(20px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+    .modal-header {
+      padding: 20px 24px; border-bottom: 1px solid var(--cinza-borda);
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .modal-header h3 { font-size: 1.1rem; }
+    .modal-close {
+      background: none; border: none; font-size: 1.4rem;
+      cursor: pointer; color: var(--texto-suave); line-height: 1;
+    }
+    .modal-close:hover { color: var(--vermelho); }
+    .modal-body { padding: 20px 24px; overflow-y: auto; flex: 1; }
+    .modal-footer {
+      padding: 16px 24px; border-top: 1px solid var(--cinza-borda);
+      display: flex; justify-content: flex-end; gap: 10px;
+    }
+
+    /* ---------- FORMULÁRIO ---------- */
+    .form-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 14px;
+    }
+    .form-grid .full { grid-column: 1 / -1; }
+    .campo label {
+      display: block; font-size: .8rem; font-weight: 600;
+      margin-bottom: 6px; color: #374151;
+    }
+    .campo input, .campo select, .campo textarea {
+      width: 100%; padding: 10px 12px;
+      border: 1px solid var(--cinza-borda);
+      border-radius: 8px; font-size: .9rem; outline: none;
+      font-family: inherit;
+      transition: border-color .2s;
+    }
+    .campo input:focus, .campo select:focus, .campo textarea:focus {
+      border-color: var(--vermelho);
+    }
+    .campo textarea { resize: vertical; min-height: 60px; }
+
+    /* ---------- CHECKLIST ---------- */
+    .checklist-item {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 10px 0; border-bottom: 1px dashed var(--cinza-borda);
+      font-size: .9rem;
+    }
+    .checklist-item:last-child { border-bottom: none; }
+    .checklist-item label { flex: 1; cursor: pointer; }
+    .checklist-item input[type="checkbox"] {
+      width: 20px; height: 20px; cursor: pointer; accent-color: var(--vermelho);
+    }
+
+    /* ---------- MENSAGENS ---------- */
+    .mensagem {
+      position: fixed; top: 20px; right: 20px;
+      padding: 14px 20px; border-radius: 10px;
+      color: #fff; font-weight: 600; font-size: .9rem;
+      box-shadow: 0 6px 20px rgba(0,0,0,.2);
+      z-index: 2000; animation: slideIn .3s ease;
+      max-width: 360px;
+    }
+    .mensagem.sucesso { background: #16a34a; }
+    .mensagem.erro { background: var(--vermelho); }
+    @keyframes slideIn {
+      from { transform: translateX(120%); }
+      to { transform: translateX(0); }
+    }
+
+    .vazio { text-align: center; padding: 40px 20px; color: var(--texto-suave); font-size: .9rem; }
+
+    /* ---------- RESPONSIVO ---------- */
     @media (max-width: 900px) { .grid-meio { grid-template-columns: 1fr; } }
     @media (max-width: 600px) {
-      header { flex-wrap: wrap; padding: 10px 14px; gap: 10px; }
-      .busca { max-width: 100%; order: 3; }
+      header { padding: 10px 14px; gap: 10px; }
+      .busca { max-width: 100%; order: 3; flex-basis: 100%; }
       main { padding: 14px; }
+      .form-grid { grid-template-columns: 1fr; }
+      .kpi-info .valor { font-size: 1.3rem; }
     }
   </style>
 </head>
@@ -155,24 +253,35 @@
 
   <header>
     <div class="logo">🔥 BRASA</div>
-    <input class="busca" type="text" placeholder="Buscar por nº, local ou setor..." />
+    <input class="busca" id="busca" type="text" placeholder="Buscar por nº, local ou setor..." />
     <div class="header-right">
-      <div class="notif">🔔<span class="badge">3</span></div>
+      <button class="btn-primario" id="btn-novo-extintor">➕ Novo Extintor</button>
       <div class="usuario">
         <div class="avatar" id="avatar">?</div>
-        <span id="email">carregando...</span>
+        <span id="email" style="display:none;"></span>
         <button class="btn-sair" id="btn-sair">Sair</button>
       </div>
     </div>
   </header>
 
   <main>
-
     <section class="kpis">
-      <div class="kpi a"><div class="kpi-icon">🧯</div><div class="kpi-info"><div class="valor">248</div><div class="label">Total de Extintores</div></div></div>
-      <div class="kpi v"><div class="kpi-icon">🟢</div><div class="kpi-info"><div class="valor">210 <small>(84%)</small></div><div class="label">Em Conformidade</div></div></div>
-      <div class="kpi l"><div class="kpi-icon">🟠</div><div class="kpi-info"><div class="valor">22</div><div class="label">Próximos do Vencimento</div></div></div>
-      <div class="kpi r"><div class="kpi-icon">🔴</div><div class="kpi-info"><div class="valor">16</div><div class="label">Vencidos</div></div></div>
+      <div class="kpi a">
+        <div class="kpi-icon">🧯</div>
+        <div class="kpi-info"><div class="valor" id="kpi-total">0</div><div class="label">Total de Extintores</div></div>
+      </div>
+      <div class="kpi v">
+        <div class="kpi-icon">🟢</div>
+        <div class="kpi-info"><div class="valor" id="kpi-em-dia">0</div><div class="label">Em Conformidade</div></div>
+      </div>
+      <div class="kpi l">
+        <div class="kpi-icon">🟠</div>
+        <div class="kpi-info"><div class="valor" id="kpi-critico">0</div><div class="label">Críticos / Atenção</div></div>
+      </div>
+      <div class="kpi r">
+        <div class="kpi-icon">🔴</div>
+        <div class="kpi-info"><div class="valor" id="kpi-vencido">0</div><div class="label">Vencidos</div></div>
+      </div>
     </section>
 
     <section class="grid-meio">
@@ -181,58 +290,153 @@
         <div class="chart-wrap"><canvas id="grafico"></canvas></div>
       </div>
       <div class="card">
-        <h2>📈 Inspeções do Mês</h2>
-        <div class="progresso-info"><span>Progresso</span><span><strong>62%</strong> (155 de 250)</span></div>
-        <div class="barra"><div style="width:62%"></div></div>
-        <div class="legenda">
-          <span><span class="dot v"></span><strong>155</strong> Realizadas</span>
-          <span><span class="dot l"></span><strong>80</strong> Pendentes</span>
-          <span><span class="dot r"></span><strong>15</strong> Atrasadas</span>
-        </div>
-        <button class="btn-primario">▶ Iniciar Nova Inspeção</button>
+        <h2>📋 Lista de Extintores</h2>
+        <p style="font-size:.85rem;color:var(--texto-suave);margin-bottom:12px;" id="resumo-lista">
+          Carregando...
+        </p>
+        <div id="lista-resumo"></div>
       </div>
     </section>
 
     <section class="card">
       <div class="card-header">
-        <h2>⚠️ Ação Necessária</h2>
-        <div class="filtros">
-          <button class="ativo">Todos</button>
-          <button>Vencidos</button>
-          <button>Críticos</button>
-          <button>Atenção</button>
+        <h2>🧯 Extintores Cadastrados</h2>
+        <div class="filtros" id="filtros">
+          <button class="ativo" data-filtro="todos">Todos</button>
+          <button data-filtro="vencido">Vencidos</button>
+          <button data-filtro="critico">Críticos</button>
+          <button data-filtro="atencao">Atenção</button>
+          <button data-filtro="em_dia">Em dia</button>
         </div>
       </div>
       <div style="overflow-x:auto;">
         <table>
           <thead>
-            <tr><th>Nº</th><th>Tipo</th><th>Local</th><th>Vence em</th><th>Status</th><th>Ação</th></tr>
+            <tr>
+              <th>Nº</th><th>Tipo</th><th>Local</th><th>Vence em</th>
+              <th>Situação</th><th>Ações</th>
+            </tr>
           </thead>
-          <tbody>
-            <tr>
-              <td><strong>0042</strong></td><td>Pó ABC</td><td>Galpão A</td>
-              <td style="color:var(--vermelho);font-weight:600;">-3 dias</td>
-              <td><span class="status r">🔴 Vencido</span></td>
-              <td><button class="btn-acao">Inspecionar</button></td>
-            </tr>
-            <tr>
-              <td><strong>0117</strong></td><td>CO₂</td><td>Sala Servidores</td>
-              <td style="color:var(--laranja);font-weight:600;">5 dias</td>
-              <td><span class="status l">🟠 Crítico</span></td>
-              <td><button class="btn-acao">Agendar</button></td>
-            </tr>
-            <tr>
-              <td><strong>0089</strong></td><td>Água</td><td>Corredor 2</td>
-              <td style="color:var(--laranja);font-weight:600;">28 dias</td>
-              <td><span class="status l">🟠 Crítico</span></td>
-              <td><button class="btn-acao">Ver</button></td>
-            </tr>
+          <tbody id="tabela-extintores">
+            <tr><td colspan="6" class="vazio">Carregando extintores...</td></tr>
           </tbody>
         </table>
       </div>
     </section>
-
   </main>
+
+  <!-- ============ MODAL: NOVO EXTINTOR ============ -->
+  <div class="modal-overlay" id="modal-extintor">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>➕ Novo Extintor</h3>
+        <button class="modal-close" data-fechar="modal-extintor">✕</button>
+      </div>
+      <form id="form-extintor">
+        <div class="modal-body">
+          <div class="form-grid">
+            <div class="campo">
+              <label for="f-numero">Nº / Patrimônio *</label>
+              <input type="text" id="f-numero" required placeholder="0042" />
+            </div>
+            <div class="campo">
+              <label for="f-tipo">Tipo *</label>
+              <select id="f-tipo" required>
+                <option value="">Selecione...</option>
+                <option>Pó ABC</option>
+                <option>Pó BC</option>
+                <option>Água</option>
+                <option>CO₂</option>
+                <option>Espuma</option>
+                <option>Classe K</option>
+              </select>
+            </div>
+            <div class="campo">
+              <label for="f-capacidade">Capacidade</label>
+              <input type="text" id="f-capacidade" placeholder="6 kg, 10 L..." />
+            </div>
+            <div class="campo">
+              <label for="f-marca">Marca</label>
+              <input type="text" id="f-marca" placeholder="Resil, Kidde..." />
+            </div>
+            <div class="campo">
+              <label for="f-setor">Setor</label>
+              <input type="text" id="f-setor" placeholder="Produção, TI..." />
+            </div>
+            <div class="campo">
+              <label for="f-local">Local</label>
+              <input type="text" id="f-local" placeholder="Galpão A, Corredor 2..." />
+            </div>
+            <div class="campo">
+              <label for="f-andar">Andar</label>
+              <input type="text" id="f-andar" placeholder="Térreo, 1º..." />
+            </div>
+            <div class="campo">
+              <label for="f-validade">Vencimento *</label>
+              <input type="date" id="f-validade" required />
+            </div>
+            <div class="campo full">
+              <label for="f-obs">Observações</label>
+              <textarea id="f-obs" placeholder="Informações adicionais..."></textarea>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-secundario" data-fechar="modal-extintor">Cancelar</button>
+          <button type="submit" class="btn-primario" id="btn-salvar-extintor">Salvar Extintor</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ============ MODAL: INSPEÇÃO ============ -->
+  <div class="modal-overlay" id="modal-inspecao">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>🔍 Inspeção — <span id="insp-numero"></span></h3>
+        <button class="modal-close" data-fechar="modal-inspecao">✕</button>
+      </div>
+      <form id="form-inspecao">
+        <div class="modal-body">
+          <p style="font-size:.85rem;color:var(--texto-suave);margin-bottom:16px;">
+            Marque os itens em conformidade. Itens desmarcados serão registrados como não conformes.
+          </p>
+
+          <div id="checklist">
+            <div class="checklist-item"><label for="ck-lacre">Lacre intacto</label><input type="checkbox" id="ck-lacre" checked /></div>
+            <div class="checklist-item"><label for="ck-manometro">Manômetro na faixa verde</label><input type="checkbox" id="ck-manometro" checked /></div>
+            <div class="checklist-item"><label for="ck-mangueira">Mangueira sem obstrução</label><input type="checkbox" id="ck-mangueira" checked /></div>
+            <div class="checklist-item"><label for="ck-suporte">Suporte fixado corretamente</label><input type="checkbox" id="ck-suporte" checked /></div>
+            <div class="checklist-item"><label for="ck-sinalizacao">Sinalização visível</label><input type="checkbox" id="ck-sinalizacao" checked /></div>
+            <div class="checklist-item"><label for="ck-etiqueta">Etiqueta de validade legível</label><input type="checkbox" id="ck-etiqueta" checked /></div>
+            <div class="checklist-item"><label for="ck-acesso">Acesso desobstruído</label><input type="checkbox" id="ck-acesso" checked /></div>
+          </div>
+
+          <div class="campo full" style="margin-top:16px;">
+            <label for="f-insp-obs">Observações da inspeção</label>
+            <textarea id="f-insp-obs" placeholder="Anotações do inspetor..."></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-secundario" data-fechar="modal-inspecao">Cancelar</button>
+          <button type="submit" class="btn-primario" id="btn-salvar-inspecao">Registrar Inspeção</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ============ MODAL: HISTÓRICO ============ -->
+  <div class="modal-overlay" id="modal-historico">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>📜 Histórico — <span id="hist-numero"></span></h3>
+        <button class="modal-close" data-fechar="modal-historico">✕</button>
+      </div>
+      <div class="modal-body" id="historico-body">
+        <p class="vazio">Carregando histórico...</p>
+      </div>
+    </div>
+  </div>
 
   <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
@@ -242,56 +446,373 @@
       'sb_publishable_X-uj41aebGg54ezG85Ffxw_JUz7S5wE'
     );
 
-    // Protege a página
+    // ---------- AUTENTICAÇÃO ----------
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      window.location.href = 'index.html';
-      throw new Error('Não autenticado');
-    }
+    if (!user) { window.location.href = 'index.html'; throw new Error('Não autenticado'); }
 
-    // Mostra e-mail e iniciais
     document.getElementById('email').textContent = user.email;
     document.getElementById('avatar').textContent = user.email.substring(0, 2).toUpperCase();
 
-    // Logout
     document.getElementById('btn-sair').addEventListener('click', async () => {
       await supabase.auth.signOut();
       window.location.href = 'index.html';
     });
 
-    // Gráfico
-    new Chart(document.getElementById('grafico').getContext('2d'), {
-      type: 'doughnut',
-      data: {
-        labels: ['Em dia', 'Atenção', 'Crítico', 'Vencido'],
-        datasets: [{
-          data: [178, 32, 22, 16],
-          backgroundColor: ['#16a34a', '#eab308', '#f59e0b', '#dc2626'],
-          borderWidth: 3, borderColor: '#fff', hoverOffset: 6
-        }]
-      },
-      options: {
-        responsive: true, maintainAspectRatio: false, cutout: '62%',
-        plugins: {
-          legend: { position: 'bottom', labels: { padding: 14, usePointStyle: true, pointStyle: 'circle' } },
-          tooltip: {
-            callbacks: {
-              label: (c) => {
-                const t = c.dataset.data.reduce((a,b) => a+b, 0);
-                return ` ${c.label}: ${c.raw} (${((c.raw/t)*100).toFixed(1)}%)`;
-              }
-            }
-          }
-        }
-      }
+    // ---------- ESTADO GLOBAL ----------
+    let extintores = [];
+    let filtroAtual = 'todos';
+    let chart = null;
+    let extintorEmInspecao = null;
+
+    // ---------- UTILITÁRIOS ----------
+    function hoje() { return new Date().toISOString().split('T')[0]; }
+    function diffDias(data) {
+      const [y, m, d] = data.split('-').map(Number);
+      const alvo = new Date(y, m - 1, d);
+      const base = new Date();
+      base.setHours(0, 0, 0, 0);
+      return Math.round((alvo - base) / 86400000);
+    }
+    function situacao(ex) {
+      const dias = diffDias(ex.data_validade);
+      if (dias < 0) return 'vencido';
+      if (dias <= 30) return 'critico';
+      if (dias <= 60) return 'atencao';
+      return 'em_dia';
+    }
+    function labelSituacao(s) {
+      return { vencido: '🔴 Vencido', critico: '🟠 Crítico', atencao: '🟡 Atenção', em_dia: '🟢 Em dia' }[s];
+    }
+    function textoDias(data) {
+      const d = diffDias(data);
+      if (d < 0) return `${d} dias`;
+      if (d === 0) return 'Hoje';
+      return `${d} dias`;
+    }
+    function corDias(data) {
+      const d = diffDias(data);
+      if (d < 0) return 'var(--vermelho)';
+      if (d <= 30) return 'var(--laranja)';
+      if (d <= 60) return '#a16207';
+      return '#166534';
+    }
+    function toast(msg, tipo = 'sucesso') {
+      const el = document.createElement('div');
+      el.className = `mensagem ${tipo}`;
+      el.textContent = msg;
+      document.body.appendChild(el);
+      setTimeout(() => el.remove(), 3500);
+    }
+    function abrirModal(id) { document.getElementById(id).classList.add('aberto'); }
+    function fecharModal(id) { document.getElementById(id).classList.remove('aberto'); }
+
+    // Botões de fechar
+    document.querySelectorAll('[data-fechar]').forEach(b => {
+      b.addEventListener('click', () => fecharModal(b.dataset.fechar));
+    });
+    // Fecha ao clicar fora
+    document.querySelectorAll('.modal-overlay').forEach(o => {
+      o.addEventListener('click', (e) => { if (e.target === o) o.classList.remove('aberto'); });
     });
 
-    // Filtros visuais
-    const btns = document.querySelectorAll('.filtros button');
-    btns.forEach(b => b.addEventListener('click', () => {
-      btns.forEach(x => x.classList.remove('ativo'));
-      b.classList.add('ativo');
-    }));
+    // ---------- CARREGAR DADOS ----------
+    async function carregarExtintores() {
+      const { data, error } = await supabase
+        .from('extintores')
+        .select('*')
+        .order('data_validade', { ascending: true });
+
+      if (error) {
+        console.error(error);
+        toast('Erro ao carregar extintores', 'erro');
+        return;
+      }
+      extintores = data || [];
+      renderizarTudo();
+    }
+
+    // ---------- RENDERIZAÇÃO ----------
+    function renderizarTudo() {
+      renderizarKPIs();
+      renderizarGrafico();
+      renderizarResumo();
+      renderizarTabela();
+    }
+
+    function renderizarKPIs() {
+      const total = extintores.length;
+      const emDia = extintores.filter(e => situacao(e) === 'em_dia').length;
+      const critico = extintores.filter(e => ['critico','atencao'].includes(situacao(e))).length;
+      const vencido = extintores.filter(e => situacao(e) === 'vencido').length;
+
+      document.getElementById('kpi-total').textContent = total;
+      document.getElementById('kpi-em-dia').innerHTML = `${emDia} <small>(${total ? Math.round(emDia/total*100) : 0}%)</small>`;
+      document.getElementById('kpi-critico').textContent = critico;
+      document.getElementById('kpi-vencido').textContent = vencido;
+    }
+
+    function renderizarGrafico() {
+      const emDia = extintores.filter(e => situacao(e) === 'em_dia').length;
+      const atencao = extintores.filter(e => situacao(e) === 'atencao').length;
+      const critico = extintores.filter(e => situacao(e) === 'critico').length;
+      const vencido = extintores.filter(e => situacao(e) === 'vencido').length;
+
+      const dados = [emDia, atencao, critico, vencido];
+      const cores = ['#16a34a', '#eab308', '#f59e0b', '#dc2626'];
+
+      if (chart) chart.destroy();
+
+      chart = new Chart(document.getElementById('grafico').getContext('2d'), {
+        type: 'doughnut',
+        data: {
+          labels: ['Em dia', 'Atenção', 'Crítico', 'Vencido'],
+          datasets: [{ data: dados, backgroundColor: cores, borderWidth: 3, borderColor: '#fff', hoverOffset: 6 }]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false, cutout: '62%',
+          plugins: {
+            legend: { position: 'bottom', labels: { padding: 14, usePointStyle: true, pointStyle: 'circle' } },
+            tooltip: { callbacks: { label: (c) => {
+              const t = c.dataset.data.reduce((a,b) => a+b, 0) || 1;
+              return ` ${c.label}: ${c.raw} (${((c.raw/t)*100).toFixed(1)}%)`;
+            }}}
+          }
+        }
+      });
+    }
+
+    function renderizarResumo() {
+      const total = extintores.length;
+      document.getElementById('resumo-lista').textContent =
+        total ? `${total} extintor(es) no sistema. Ordenados por vencimento.` : 'Nenhum extintor cadastrado ainda.';
+    }
+
+    function renderizarTabela() {
+      const tbody = document.getElementById('tabela-extintores');
+      const lista = filtroAtual === 'todos'
+        ? extintores
+        : extintores.filter(e => situacao(e) === filtroAtual);
+
+      if (!lista.length) {
+        tbody.innerHTML = '<tr><td colspan="6" class="vazio">Nenhum extintor encontrado.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = lista.map(e => `
+        <tr>
+          <td><strong>${e.numero}</strong></td>
+          <td>${e.tipo}</td>
+          <td>${e.local || e.setor || '-'}</td>
+          <td style="color:${corDias(e.data_validade)};font-weight:600;">
+            ${textoDias(e.data_validade)}
+          </td>
+          <td><span class="status ${situacao(e)}">${labelSituacao(situacao(e))}</span></td>
+          <td>
+            <div class="acoes-tabela">
+              <button class="btn-acao primario" data-inspecionar="${e.id}" data-numero="${e.numero}">Inspecionar</button>
+              <button class="btn-acao neutro" data-historico="${e.id}" data-numero="${e.numero}">Histórico</button>
+            </div>
+          </td>
+        </tr>
+      `).join('');
+
+      // Liga os botões
+      tbody.querySelectorAll('[data-inspecionar]').forEach(b => {
+        b.addEventListener('click', () => abrirInspecao(b.dataset.inspecionar, b.dataset.numero));
+      });
+      tbody.querySelectorAll('[data-historico]').forEach(b => {
+        b.addEventListener('click', () => abrirHistorico(b.dataset.historico, b.dataset.numero));
+      });
+    }
+
+    // ---------- FILTROS ----------
+    document.querySelectorAll('#filtros button').forEach(b => {
+      b.addEventListener('click', () => {
+        document.querySelectorAll('#filtros button').forEach(x => x.classList.remove('ativo'));
+        b.classList.add('ativo');
+        filtroAtual = b.dataset.filtro;
+        renderizarTabela();
+      });
+    });
+
+    // ---------- BUSCA ----------
+    document.getElementById('busca').addEventListener('input', (e) => {
+      const q = e.target.value.toLowerCase().trim();
+      const tbody = document.getElementById('tabela-extintores');
+      const filtrados = extintores.filter(ex => {
+        const txt = [ex.numero, ex.tipo, ex.local, ex.setor, ex.andar].join(' ').toLowerCase();
+        return txt.includes(q);
+      });
+      // Reutiliza renderização, mas com lista filtrada
+      if (!q) { renderizarTabela(); return; }
+      if (!filtrados.length) {
+        tbody.innerHTML = '<tr><td colspan="6" class="vazio">Nenhum resultado.</td></tr>';
+        return;
+      }
+      tbody.innerHTML = filtrados.map(e => `
+        <tr>
+          <td><strong>${e.numero}</strong></td>
+          <td>${e.tipo}</td>
+          <td>${e.local || e.setor || '-'}</td>
+          <td style="color:${corDias(e.data_validade)};font-weight:600;">${textoDias(e.data_validade)}</td>
+          <td><span class="status ${situacao(e)}">${labelSituacao(situacao(e))}</span></td>
+          <td>
+            <div class="acoes-tabela">
+              <button class="btn-acao primario" data-inspecionar="${e.id}" data-numero="${e.numero}">Inspecionar</button>
+              <button class="btn-acao neutro" data-historico="${e.id}" data-numero="${e.numero}">Histórico</button>
+            </div>
+          </td>
+        </tr>
+      `).join('');
+      tbody.querySelectorAll('[data-inspecionar]').forEach(b => {
+        b.addEventListener('click', () => abrirInspecao(b.dataset.inspecionar, b.dataset.numero));
+      });
+      tbody.querySelectorAll('[data-historico]').forEach(b => {
+        b.addEventListener('click', () => abrirHistorico(b.dataset.historico, b.dataset.numero));
+      });
+    });
+
+    // ---------- NOVO EXTINTOR ----------
+    document.getElementById('btn-novo-extintor').addEventListener('click', () => {
+      document.getElementById('form-extintor').reset();
+      abrirModal('modal-extintor');
+    });
+
+    document.getElementById('form-extintor').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById('btn-salvar-extintor');
+      btn.disabled = true;
+      btn.textContent = 'Salvando...';
+
+      const novo = {
+        user_id: user.id,
+        numero: document.getElementById('f-numero').value.trim(),
+        tipo: document.getElementById('f-tipo').value,
+        capacidade: document.getElementById('f-capacidade').value.trim() || null,
+        marca: document.getElementById('f-marca').value.trim() || null,
+        setor: document.getElementById('f-setor').value.trim() || null,
+        local: document.getElementById('f-local').value.trim() || null,
+        andar: document.getElementById('f-andar').value.trim() || null,
+        data_validade: document.getElementById('f-validade').value,
+        observacoes: document.getElementById('f-obs').value.trim() || null
+      };
+
+      const { error } = await supabase.from('extintores').insert(novo);
+
+      btn.disabled = false;
+      btn.textContent = 'Salvar Extintor';
+
+      if (error) {
+        console.error(error);
+        toast('Erro ao salvar: ' + error.message, 'erro');
+        return;
+      }
+
+      toast('✅ Extintor cadastrado!');
+      fecharModal('modal-extintor');
+      await carregarExtintores();
+    });
+
+    // ---------- INSPEÇÃO ----------
+    function abrirInspecao(id, numero) {
+      extintorEmInspecao = id;
+      document.getElementById('insp-numero').textContent = numero;
+      document.getElementById('form-inspecao').reset();
+      // Reset todos os checkboxes para marcados
+      document.querySelectorAll('#checklist input[type=checkbox]').forEach(c => c.checked = true);
+      abrirModal('modal-inspecao');
+    }
+
+    document.getElementById('form-inspecao').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById('btn-salvar-inspecao');
+      btn.disabled = true;
+      btn.textContent = 'Registrando...';
+
+      const checklist = {
+        lacre_ok: document.getElementById('ck-lacre').checked,
+        manometro_ok: document.getElementById('ck-manometro').checked,
+        mangueira_ok: document.getElementById('ck-mangueira').checked,
+        suporte_ok: document.getElementById('ck-suporte').checked,
+        sinalizacao_ok: document.getElementById('ck-sinalizacao').checked,
+        etiqueta_ok: document.getElementById('ck-etiqueta').checked,
+        acesso_ok: document.getElementById('ck-acesso').checked
+      };
+
+      const tudoOk = Object.values(checklist).every(v => v === true);
+
+      const nova = {
+        user_id: user.id,
+        extintor_id: extintorEmInspecao,
+        inspetor: user.email,
+        checklist,
+        resultado: tudoOk ? 'conforme' : 'nao_conforme',
+        observacoes: document.getElementById('f-insp-obs').value.trim() || null
+      };
+
+      const { error } = await supabase.from('inspecoes').insert(nova);
+
+      btn.disabled = false;
+      btn.textContent = 'Registrar Inspeção';
+
+      if (error) {
+        console.error(error);
+        toast('Erro: ' + error.message, 'erro');
+        return;
+      }
+
+      toast(tudoOk ? '✅ Inspeção registrada (conforme)' : '⚠️ Inspeção registrada com não conformidades');
+      fecharModal('modal-inspecao');
+    });
+
+    // ---------- HISTÓRICO ----------
+    async function abrirHistorico(id, numero) {
+      document.getElementById('hist-numero').textContent = numero;
+      const body = document.getElementById('historico-body');
+      body.innerHTML = '<p class="vazio">Carregando...</p>';
+      abrirModal('modal-historico');
+
+      const { data, error } = await supabase
+        .from('inspecoes')
+        .select('*')
+        .eq('extintor_id', id)
+        .order('data_inspecao', { ascending: false });
+
+      if (error) {
+        body.innerHTML = '<p class="vazio">Erro ao carregar histórico.</p>';
+        return;
+      }
+
+      if (!data || !data.length) {
+        body.innerHTML = '<p class="vazio">Nenhuma inspeção registrada ainda.</p>';
+        return;
+      }
+
+      body.innerHTML = data.map(i => {
+        const dt = new Date(i.data_inspecao).toLocaleString('pt-BR');
+        const badge = i.resultado === 'conforme'
+          ? '<span class="status em_dia">Conforme</span>'
+          : '<span class="status vencido">Não conforme</span>';
+        const itens = i.checklist ? Object.entries(i.checklist).map(([k, v]) =>
+          `<li>${v ? '✅' : '❌'} ${k.replace('_ok','').replace(/_/g,' ')}</li>`
+        ).join('') : '';
+        return `
+          <div style="padding:12px 0;border-bottom:1px solid var(--cinza-borda);">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+              <strong style="font-size:.9rem;">${dt}</strong> ${badge}
+            </div>
+            <div style="font-size:.8rem;color:var(--texto-suave);margin-bottom:6px;">
+              Inspetor: ${i.inspetor || '-'}
+            </div>
+            ${itens ? `<ul style="font-size:.8rem;padding-left:20px;color:#444;">${itens}</ul>` : ''}
+            ${i.observacoes ? `<p style="font-size:.8rem;margin-top:6px;color:#444;">💬 ${i.observacoes}</p>` : ''}
+          </div>
+        `;
+      }).join('');
+    }
+
+    // ---------- INICIAR ----------
+    await carregarExtintores();
   </script>
 
 </body>
