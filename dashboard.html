@@ -196,6 +196,7 @@
     .card-inspecao.critico { border-left-color: #f59e0b; }
     .card-inspecao.atencao { border-left-color: #eab308; }
     .card-inspecao.em_dia { border-left-color: #16a34a; }
+    .card-inspecao.descartado { border-left-color: #9ca3af; }
     
     .card-inspecao-header { display: flex; justify-content: space-between; align-items: flex-start; }
     .card-inspecao-header h3 { font-size: 1.1rem; font-weight: 700; margin-bottom: 2px; }
@@ -207,11 +208,30 @@
       background: linear-gradient(135deg, var(--vermelho), var(--laranja));
       color: #fff; border: none; padding: 10px;
       border-radius: 8px; font-size: .9rem; font-weight: 600;
-      cursor: pointer; width: 100%; margin-top: auto;
+      cursor: pointer; width: 100%; margin-top: 0;
       transition: filter .15s;
     }
     .btn-inspecionar-card:hover { filter: brightness(1.1); }
     .btn-inspecionar-card:disabled { opacity: .5; cursor: not-allowed; }
+
+    /* ---------- NOVOS BOTÕES DO CARD DE INSPEÇÃO ---------- */
+    .acoes-card {
+      display: flex; gap: 6px; margin-top: auto; padding-top: 12px;
+    }
+    .btn-card-acao {
+      flex: 1; background: transparent; border: 1px solid var(--cinza-borda);
+      padding: 8px; border-radius: 6px; font-size: .8rem; font-weight: 600;
+      cursor: pointer; text-align: center; transition: all .15s;
+      display: flex; align-items: center; justify-content: center; gap: 4px;
+    }
+    .btn-card-acao.editar { color: #2563eb; border-color: #bfdbfe; }
+    .btn-card-acao.editar:hover { background: #eff6ff; border-color: #2563eb; }
+    .btn-card-acao.excluir { color: #dc2626; border-color: #fecaca; }
+    .btn-card-acao.excluir:hover { background: #fee2e2; border-color: #dc2626; }
+    .btn-card-acao.status { color: #d97706; border-color: #fde68a; }
+    .btn-card-acao.status:hover { background: #fef3c7; border-color: #d97706; }
+    .btn-card-acao.ativar { color: #16a34a; border-color: #bbf7d0; }
+    .btn-card-acao.ativar:hover { background: #f0fdf4; border-color: #16a34a; }
 
     /* ---------- MODAL ---------- */
     .modal-overlay {
@@ -786,50 +806,83 @@
       const container = document.getElementById('grid-inspecao');
       if (!container) return;
       
-      const ativos = extintores.filter(e => e.status !== 'descartado');
       const busca = document.getElementById('busca-inspecao')?.value.toLowerCase().trim() || '';
       
-      const filtrados = ativos.filter(e => {
+      const filtrados = extintores.filter(e => {
         const txt = [e.numero, e.tipo, e.setor, e.local].join(' ').toLowerCase();
         return txt.includes(busca);
       });
 
       if (!filtrados.length) {
-        container.innerHTML = '<p class="vazio">Nenhum extintor disponível para inspeção.</p>';
+        container.innerHTML = '<p class="vazio">Nenhum extintor encontrado.</p>';
         return;
       }
 
       container.innerHTML = filtrados.map(e => {
         const st = e.status || 'ativo';
+        const isDescartado = st === 'descartado';
         const sit = situacao(e);
-        const dias = textoDias(e.data_validade);
+        
+        const situacaoHtml = isDescartado 
+          ? '<span class="status" style="background:#f3f4f6;color:#6b7280;">Inativo</span>' 
+          : `<span class="status ${sit}">${labelSituacao(sit)}</span>`;
+          
+        const vencimentoHtml = isDescartado
+          ? '<div>⏳ <strong>Vence em:</strong> -</div>'
+          : `<div>⏳ <strong>Vence em:</strong> <span style="color:${corDias(e.data_validade)};font-weight:600;">${textoDias(e.data_validade)}</span></div>`;
+
+        let btnStatus = '';
+        if (isDescartado) {
+          btnStatus = `<button class="btn-card-acao ativar" data-reativar="${e.id}" title="Reativar">✅ Reativar</button>`;
+        } else if (st === 'manutencao') {
+          btnStatus = `<button class="btn-card-acao status" data-manutencao="${e.id}" data-acao="ativar" title="Marcar como Ativo">🟢 Tornar Ativo</button>`;
+        } else {
+          btnStatus = `<button class="btn-card-acao status" data-manutencao="${e.id}" data-acao="manutencao" title="Marcar em Manutenção">🚧 Manutenção</button>`;
+        }
         
         return `
-          <div class="card-inspecao ${sit}">
+          <div class="card-inspecao ${isDescartado ? 'descartado' : sit}" style="${isDescartado ? 'opacity: 0.6;' : ''}">
             <div class="card-inspecao-header">
               <div>
                 <h3>🧯 Nº ${e.numero}</h3>
                 <span class="tipo-cap">${e.tipo} • ${e.capacidade}</span>
               </div>
-              <span class="status ${sit}">${labelSituacao(sit)}</span>
+              ${situacaoHtml}
             </div>
             
             <div class="card-inspecao-info">
               <div>📍 <strong>Local:</strong> ${e.setor || '-'} ${e.local ? ' - ' + e.local : ''}</div>
-              <div>⏳ <strong>Vence em:</strong> <span style="color:${corDias(e.data_validade)};font-weight:600;">${dias}</span></div>
+              ${vencimentoHtml}
               ${st === 'manutencao' ? '<div style="color:#854d0e;font-weight:600;">🚧 Em Manutenção</div>' : ''}
             </div>
 
-            <button class="btn-inspecionar-card" data-inspecionar="${e.id}" data-numero="${e.numero}">
+            <button class="btn-inspecionar-card" data-inspecionar="${e.id}" data-numero="${e.numero}" ${isDescartado ? 'disabled' : ''}>
               📝 Fazer Inspeção
             </button>
+
+            <div class="acoes-card">
+              ${btnStatus}
+              <button class="btn-card-acao editar" data-editar="${e.id}" title="Editar">✏️</button>
+              <button class="btn-card-acao excluir" data-excluir="${e.id}" data-numero="${e.numero}" title="Excluir">🗑️</button>
+            </div>
           </div>
         `;
       }).join('');
 
-      // Vincula eventos dos botões
       container.querySelectorAll('[data-inspecionar]').forEach(b => {
         b.addEventListener('click', () => abrirInspecao(b.dataset.inspecionar, b.dataset.numero));
+      });
+      container.querySelectorAll('[data-editar]').forEach(b => {
+        b.addEventListener('click', () => abrirEdicao(b.dataset.editar));
+      });
+      container.querySelectorAll('[data-excluir]').forEach(b => {
+        b.addEventListener('click', () => excluirExtintor(b.dataset.excluir, b.dataset.numero));
+      });
+      container.querySelectorAll('[data-manutencao]').forEach(b => {
+        b.addEventListener('click', () => mudarStatusRapido(b.dataset.manutencao, b.dataset.acao));
+      });
+      container.querySelectorAll('[data-reativar]').forEach(b => {
+        b.addEventListener('click', () => mudarStatusRapido(b.dataset.reativar, 'ativo'));
       });
     }
 
@@ -998,6 +1051,32 @@
       }
 
       toast('🗑️ Extintor excluído!');
+      await carregarExtintores();
+    }
+
+    // ---------- MUDAR STATUS RÁPIDO (CARD) ----------
+    async function mudarStatusRapido(id, novoStatus) {
+      const btn = document.querySelector(`[data-manutencao="${id}"], [data-reativar="${id}"]`);
+      if (btn) { btn.disabled = true; btn.textContent = '...'; }
+
+      const { error } = await supabase
+        .from('extintores')
+        .update({ status: novoStatus })
+        .eq('id', id);
+
+      if (error) {
+        toast('Erro ao mudar status: ' + error.message, 'erro');
+        if (btn) { btn.disabled = false; }
+        return;
+      }
+
+      const msg = {
+        ativo: '🟢 Extintor reativado!',
+        manutencao: '🚧 Extintor enviado para manutenção!',
+        descartado: '🗑️ Extintor inativado!'
+      }[novoStatus];
+      
+      toast(msg);
       await carregarExtintores();
     }
 
