@@ -45,14 +45,6 @@
     }
     .busca:focus { border-color: var(--vermelho); }
     .header-right { margin-left: auto; display: flex; align-items: center; gap: 14px; }
-    .notif { position: relative; cursor: pointer; font-size: 1.2rem; }
-    .notif .badge {
-      position: absolute; top: -4px; right: -6px;
-      background: var(--vermelho); color: #fff;
-      font-size: .65rem; font-weight: 700;
-      border-radius: 50%; width: 16px; height: 16px;
-      display: flex; align-items: center; justify-content: center;
-    }
     .usuario { display: flex; align-items: center; gap: 10px; font-size: .9rem; font-weight: 500; }
     .avatar {
       width: 32px; height: 32px; border-radius: 50%;
@@ -253,7 +245,7 @@
 
   <header>
     <div class="logo">🔥 BRASA</div>
-    <input class="busca" id="busca" type="text" placeholder="Buscar por nº, local ou setor..." />
+    <input class="busca" id="busca" type="text" placeholder="Buscar por nº, localização..." />
     <div class="header-right">
       <button class="btn-primario" id="btn-novo-extintor">➕ Novo Extintor</button>
       <div class="usuario">
@@ -290,11 +282,16 @@
         <div class="chart-wrap"><canvas id="grafico"></canvas></div>
       </div>
       <div class="card">
-        <h2>📋 Lista de Extintores</h2>
+        <h2>📋 Resumo do Sistema</h2>
         <p style="font-size:.85rem;color:var(--texto-suave);margin-bottom:12px;" id="resumo-lista">
           Carregando...
         </p>
-        <div id="lista-resumo"></div>
+        <div style="margin-top:20px; font-size:0.85rem; color:var(--texto-suave); line-height: 1.6;">
+          <strong>Regra de Vencimento:</strong><br>
+          O sistema calcula automaticamente a data mais crítica entre:<br>
+          • Manutenção (Recarga) + 1 ano<br>
+          • Teste Hidrostático + 5 anos
+        </div>
       </div>
     </section>
 
@@ -313,7 +310,7 @@
         <table>
           <thead>
             <tr>
-              <th>Nº</th><th>Tipo</th><th>Local</th><th>Vence em</th>
+              <th>Nº</th><th>Tipo</th><th>Localização</th><th>Vence em</th>
               <th>Situação</th><th>Ações</th>
             </tr>
           </thead>
@@ -351,30 +348,44 @@
                 <option>Classe K</option>
               </select>
             </div>
+            
             <div class="campo">
-              <label for="f-capacidade">Capacidade</label>
-              <input type="text" id="f-capacidade" placeholder="6 kg, 10 L..." />
+              <label for="f-capacidade">Peso (kg) *</label>
+              <select id="f-capacidade" required>
+                <option value="">Selecione...</option>
+                <option value="1 kg">1 kg</option>
+                <option value="4 kg">4 kg</option>
+                <option value="6 kg">6 kg</option>
+                <option value="8 kg">8 kg</option>
+                <option value="10 kg">10 kg</option>
+                <option value="12 kg">12 kg</option>
+                <option value="20 kg">20 kg</option>
+                <option value="25 kg">25 kg</option>
+                <option value="50 kg">50 kg</option>
+                <option value="10 L">10 L (Água/Espuma)</option>
+                <option value="18 L">18 L (Água/Espuma)</option>
+              </select>
             </div>
             <div class="campo">
-              <label for="f-marca">Marca</label>
-              <input type="text" id="f-marca" placeholder="Resil, Kidde..." />
+              <label for="f-setor">Localização</label>
+              <input type="text" id="f-setor" placeholder="Ex: Produção, TI..." />
             </div>
+
             <div class="campo">
-              <label for="f-setor">Setor</label>
-              <input type="text" id="f-setor" placeholder="Produção, TI..." />
+              <label for="f-local">Sub. Localização</label>
+              <input type="text" id="f-local" placeholder="Ex: Galpão A, Corredor 2..." />
             </div>
+            
             <div class="campo">
-              <label for="f-local">Local</label>
-              <input type="text" id="f-local" placeholder="Galpão A, Corredor 2..." />
+              <label for="f-manutencao">Data Última Manutenção *</label>
+              <input type="date" id="f-manutencao" required />
             </div>
+
             <div class="campo">
-              <label for="f-andar">Andar</label>
-              <input type="text" id="f-andar" placeholder="Térreo, 1º..." />
+              <label for="f-teste">Data Últ. Teste Hidrostático *</label>
+              <input type="date" id="f-teste" required />
             </div>
-            <div class="campo">
-              <label for="f-validade">Vencimento *</label>
-              <input type="date" id="f-validade" required />
-            </div>
+
             <div class="campo full">
               <label for="f-obs">Observações</label>
               <textarea id="f-obs" placeholder="Informações adicionais..."></textarea>
@@ -465,7 +476,6 @@
     let extintorEmInspecao = null;
 
     // ---------- UTILITÁRIOS ----------
-    function hoje() { return new Date().toISOString().split('T')[0]; }
     function diffDias(data) {
       const [y, m, d] = data.split('-').map(Number);
       const alvo = new Date(y, m - 1, d);
@@ -506,11 +516,9 @@
     function abrirModal(id) { document.getElementById(id).classList.add('aberto'); }
     function fecharModal(id) { document.getElementById(id).classList.remove('aberto'); }
 
-    // Botões de fechar
     document.querySelectorAll('[data-fechar]').forEach(b => {
       b.addEventListener('click', () => fecharModal(b.dataset.fechar));
     });
-    // Fecha ao clicar fora
     document.querySelectorAll('.modal-overlay').forEach(o => {
       o.addEventListener('click', (e) => { if (e.target === o) o.classList.remove('aberto'); });
     });
@@ -602,7 +610,7 @@
         <tr>
           <td><strong>${e.numero}</strong></td>
           <td>${e.tipo}</td>
-          <td>${e.local || e.setor || '-'}</td>
+          <td>${e.setor ? e.setor + (e.local ? ' - ' + e.local : '') : (e.local || '-')}</td>
           <td style="color:${corDias(e.data_validade)};font-weight:600;">
             ${textoDias(e.data_validade)}
           </td>
@@ -616,7 +624,6 @@
         </tr>
       `).join('');
 
-      // Liga os botões
       tbody.querySelectorAll('[data-inspecionar]').forEach(b => {
         b.addEventListener('click', () => abrirInspecao(b.dataset.inspecionar, b.dataset.numero));
       });
@@ -640,10 +647,9 @@
       const q = e.target.value.toLowerCase().trim();
       const tbody = document.getElementById('tabela-extintores');
       const filtrados = extintores.filter(ex => {
-        const txt = [ex.numero, ex.tipo, ex.local, ex.setor, ex.andar].join(' ').toLowerCase();
+        const txt = [ex.numero, ex.tipo, ex.setor, ex.local].join(' ').toLowerCase();
         return txt.includes(q);
       });
-      // Reutiliza renderização, mas com lista filtrada
       if (!q) { renderizarTabela(); return; }
       if (!filtrados.length) {
         tbody.innerHTML = '<tr><td colspan="6" class="vazio">Nenhum resultado.</td></tr>';
@@ -653,7 +659,7 @@
         <tr>
           <td><strong>${e.numero}</strong></td>
           <td>${e.tipo}</td>
-          <td>${e.local || e.setor || '-'}</td>
+          <td>${e.setor ? e.setor + (e.local ? ' - ' + e.local : '') : (e.local || '-')}</td>
           <td style="color:${corDias(e.data_validade)};font-weight:600;">${textoDias(e.data_validade)}</td>
           <td><span class="status ${situacao(e)}">${labelSituacao(situacao(e))}</span></td>
           <td>
@@ -682,18 +688,41 @@
       e.preventDefault();
       const btn = document.getElementById('btn-salvar-extintor');
       btn.disabled = true;
-      btn.textContent = 'Salvando...';
+      btn.textContent = 'Calculando e Salvando...';
 
+      // 1. Pegar as datas informadas
+      const dataManutencaoStr = document.getElementById('f-manutencao').value;
+      const dataTesteStr = document.getElementById('f-teste').value;
+
+      // 2. Calcular os vencimentos (Manutenção = +1 ano | Teste = +5 anos)
+      const dManut = new Date(dataManutencaoStr + 'T12:00:00'); // T12 evita bug de fuso horário
+      dManut.setFullYear(dManut.getFullYear() + 1);
+
+      const dTeste = new Date(dataTesteStr + 'T12:00:00');
+      dTeste.setFullYear(dTeste.getFullYear() + 5);
+
+      // 3. Descobrir qual vence primeiro (a data mais antiga)
+      const vencimentoFinal = dManut < dTeste ? dManut : dTeste;
+      
+      // Formatar para YYYY-MM-DD para o Supabase
+      const dataValidadeFinal = vencimentoFinal.toISOString().split('T')[0];
+
+      // 4. Montar o objeto
       const novo = {
         user_id: user.id,
         numero: document.getElementById('f-numero').value.trim(),
         tipo: document.getElementById('f-tipo').value,
-        capacidade: document.getElementById('f-capacidade').value.trim() || null,
-        marca: document.getElementById('f-marca').value.trim() || null,
+        capacidade: document.getElementById('f-capacidade').value,
         setor: document.getElementById('f-setor').value.trim() || null,
         local: document.getElementById('f-local').value.trim() || null,
-        andar: document.getElementById('f-andar').value.trim() || null,
-        data_validade: document.getElementById('f-validade').value,
+        
+        // Datas técnicas
+        data_fabricacao: dataManutencaoStr, // Usando o campo existente para a última manutenção
+        data_teste_hidro: dataTesteStr,
+        
+        // Data de vencimento calculada
+        data_validade: dataValidadeFinal, 
+        
         observacoes: document.getElementById('f-obs').value.trim() || null
       };
 
@@ -708,7 +737,10 @@
         return;
       }
 
-      toast('✅ Extintor cadastrado!');
+      // Mostrar feedback de qual data venceu
+      const motivo = dManut < dTeste ? 'Manutenção (+1 ano)' : 'Teste Hidrostático (+5 anos)';
+      toast(`✅ Extintor salvo! Vence em ${dataValidadeFinal.split('-').reverse().join('/')} (${motivo})`);
+      
       fecharModal('modal-extintor');
       await carregarExtintores();
     });
