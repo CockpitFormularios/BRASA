@@ -65,6 +65,25 @@
       display: flex; flex-direction: column; gap: 24px;
     }
 
+    /* ---------- ABAS ---------- */
+    .tabs-container {
+      display: flex; gap: 10px;
+      border-bottom: 2px solid var(--cinza-borda);
+      padding-bottom: 10px; margin-bottom: 8px;
+    }
+    .tab-btn {
+      background: transparent; border: none;
+      font-size: 1rem; font-weight: 600; color: var(--texto-suave);
+      padding: 8px 16px; cursor: pointer; border-radius: 8px 8px 0 0;
+      transition: all .2s;
+    }
+    .tab-btn:hover { background: #f0f0f0; color: var(--escuro); }
+    .tab-btn.ativo {
+      color: var(--vermelho);
+      border-bottom: 3px solid var(--vermelho);
+      margin-bottom: -12px;
+    }
+
     /* ---------- KPIs ---------- */
     .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; }
     .kpi {
@@ -134,17 +153,14 @@
     .btn-acao.neutro { color: var(--texto-suave); }
     .btn-acao.neutro:hover { background: var(--cinza-borda); }
     
-    .btn-acao.icon {
-      padding: 6px 8px; font-size: 1rem; line-height: 1;
-      border-radius: 6px;
-    }
+    .btn-acao.icon { padding: 6px 8px; font-size: 1rem; line-height: 1; border-radius: 6px; }
     .btn-acao.excluir { color: #dc2626; border-color: #fecaca; }
     .btn-acao.excluir:hover { background: #fee2e2; border-color: #dc2626; }
     .btn-acao.editar { color: #2563eb; border-color: #bfdbfe; }
     .btn-acao.editar:hover { background: #eff6ff; border-color: #2563eb; }
     .btn-acao:disabled { opacity: .4; cursor: not-allowed; }
 
-    /* ---------- BOTÕES ---------- */
+    /* ---------- BOTÕES GERAIS ---------- */
     .btn-primario {
       background: linear-gradient(135deg, var(--vermelho), var(--laranja));
       color: #fff; border: none; padding: 10px 20px;
@@ -162,6 +178,40 @@
       cursor: pointer;
     }
     .btn-secundario:hover { background: var(--cinza); }
+
+    /* ---------- GRID DE INSPEÇÃO (CARDS) ---------- */
+    .grid-inspecao {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 16px;
+    }
+    .card-inspecao {
+      background: #fff; border-radius: 12px; padding: 16px;
+      box-shadow: var(--sombra); border-left: 5px solid var(--cinza-borda);
+      display: flex; flex-direction: column; gap: 12px;
+      transition: transform .15s;
+    }
+    .card-inspecao:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(0,0,0,.1); }
+    .card-inspecao.vencido { border-left-color: #dc2626; }
+    .card-inspecao.critico { border-left-color: #f59e0b; }
+    .card-inspecao.atencao { border-left-color: #eab308; }
+    .card-inspecao.em_dia { border-left-color: #16a34a; }
+    
+    .card-inspecao-header { display: flex; justify-content: space-between; align-items: flex-start; }
+    .card-inspecao-header h3 { font-size: 1.1rem; font-weight: 700; margin-bottom: 2px; }
+    .card-inspecao-header .tipo-cap { font-size: .8rem; color: var(--texto-suave); }
+    .card-inspecao-info { font-size: .85rem; color: #444; display: flex; flex-direction: column; gap: 4px; }
+    .card-inspecao-info strong { color: var(--escuro); }
+    
+    .btn-inspecionar-card {
+      background: linear-gradient(135deg, var(--vermelho), var(--laranja));
+      color: #fff; border: none; padding: 10px;
+      border-radius: 8px; font-size: .9rem; font-weight: 600;
+      cursor: pointer; width: 100%; margin-top: auto;
+      transition: filter .15s;
+    }
+    .btn-inspecionar-card:hover { filter: brightness(1.1); }
+    .btn-inspecionar-card:disabled { opacity: .5; cursor: not-allowed; }
 
     /* ---------- MODAL ---------- */
     .modal-overlay {
@@ -199,9 +249,7 @@
     }
 
     /* ---------- FORMULÁRIO ---------- */
-    .form-grid {
-      display: grid; grid-template-columns: 1fr 1fr; gap: 14px;
-    }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
     .form-grid .full { grid-column: 1 / -1; }
     .campo label {
       display: block; font-size: .8rem; font-weight: 600;
@@ -231,7 +279,7 @@
       width: 20px; height: 20px; cursor: pointer; accent-color: var(--vermelho);
     }
 
-    /* ---------- MENSAGENS ---------- */
+    /* ---------- MENSAGENS / TOAST ---------- */
     .mensagem {
       position: fixed; top: 20px; right: 20px;
       padding: 14px 20px; border-radius: 10px;
@@ -276,67 +324,89 @@
   </header>
 
   <main>
-    <section class="kpis">
-      <div class="kpi a">
-        <div class="kpi-icon">🧯</div>
-        <div class="kpi-info"><div class="valor" id="kpi-total">0</div><div class="label">Total de Extintores</div></div>
-      </div>
-      <div class="kpi v">
-        <div class="kpi-icon">🟢</div>
-        <div class="kpi-info"><div class="valor" id="kpi-em-dia">0</div><div class="label">Em Conformidade</div></div>
-      </div>
-      <div class="kpi l">
-        <div class="kpi-icon">🟠</div>
-        <div class="kpi-info"><div class="valor" id="kpi-critico">0</div><div class="label">Críticos / Atenção</div></div>
-      </div>
-      <div class="kpi r">
-        <div class="kpi-icon">🔴</div>
-        <div class="kpi-info"><div class="valor" id="kpi-vencido">0</div><div class="label">Vencidos</div></div>
-      </div>
-    </section>
+    <!-- ABAS -->
+    <div class="tabs-container">
+      <button class="tab-btn ativo" id="tab-visao">📊 Visão Geral</button>
+      <button class="tab-btn" id="tab-inspecao">🔍 Inspecionar Extintores</button>
+    </div>
 
-    <section class="grid-meio">
-      <div class="card">
-        <h2>📊 Semáforo de Vencimentos</h2>
-        <div class="chart-wrap"><canvas id="grafico"></canvas></div>
-      </div>
-      <div class="card">
-        <h2>📋 Resumo do Sistema</h2>
-        <p style="font-size:.85rem;color:var(--texto-suave);margin-bottom:12px;" id="resumo-lista">
-          Carregando...
-        </p>
-        <div style="margin-top:20px; font-size:0.85rem; color:var(--texto-suave); line-height: 1.6;">
-          <strong>Regra de Vencimento:</strong><br>
-          O sistema calcula automaticamente a data mais crítica entre:<br>
-          • Manutenção (Recarga) + 1 ano<br>
-          • Teste Hidrostático + 5 anos
+    <!-- PÁGINA 1: VISÃO GERAL -->
+    <section id="pagina-visao">
+      <div class="kpis" style="margin-bottom: 24px;">
+        <div class="kpi a">
+          <div class="kpi-icon">🧯</div>
+          <div class="kpi-info"><div class="valor" id="kpi-total">0</div><div class="label">Total de Extintores</div></div>
+        </div>
+        <div class="kpi v">
+          <div class="kpi-icon">🟢</div>
+          <div class="kpi-info"><div class="valor" id="kpi-em-dia">0</div><div class="label">Em Conformidade</div></div>
+        </div>
+        <div class="kpi l">
+          <div class="kpi-icon">🟠</div>
+          <div class="kpi-info"><div class="valor" id="kpi-critico">0</div><div class="label">Críticos / Atenção</div></div>
+        </div>
+        <div class="kpi r">
+          <div class="kpi-icon">🔴</div>
+          <div class="kpi-info"><div class="valor" id="kpi-vencido">0</div><div class="label">Vencidos</div></div>
         </div>
       </div>
-    </section>
 
-    <section class="card">
-      <div class="card-header">
-        <h2>🧯 Extintores Cadastrados</h2>
-        <div class="filtros" id="filtros">
-          <button class="ativo" data-filtro="todos">Todos</button>
-          <button data-filtro="vencido">Vencidos</button>
-          <button data-filtro="critico">Críticos</button>
-          <button data-filtro="atencao">Atenção</button>
-          <button data-filtro="em_dia">Em dia</button>
+      <div class="grid-meio" style="margin-bottom: 24px;">
+        <div class="card">
+          <h2>📊 Semáforo de Vencimentos</h2>
+          <div class="chart-wrap"><canvas id="grafico"></canvas></div>
+        </div>
+        <div class="card">
+          <h2>📋 Resumo do Sistema</h2>
+          <p style="font-size:.85rem;color:var(--texto-suave);margin-bottom:12px;" id="resumo-lista">
+            Carregando...
+          </p>
+          <div style="margin-top:20px; font-size:0.85rem; color:var(--texto-suave); line-height: 1.6;">
+            <strong>Regra de Vencimento:</strong><br>
+            O sistema calcula automaticamente a data mais crítica entre:<br>
+            • Manutenção (Recarga) + 1 ano<br>
+            • Teste Hidrostático + 5 anos
+          </div>
         </div>
       </div>
-      <div style="overflow-x:auto;">
-        <table>
-          <thead>
-            <tr>
-              <th>Nº</th><th>Tipo</th><th>Localização</th><th>Vence em</th>
-              <th>Situação</th><th>Status</th><th>Ações</th>
-            </tr>
-          </thead>
-          <tbody id="tabela-extintores">
-            <tr><td colspan="7" class="vazio">Carregando extintores...</td></tr>
-          </tbody>
-        </table>
+
+      <section class="card">
+        <div class="card-header">
+          <h2>🧯 Extintores Cadastrados</h2>
+          <div class="filtros" id="filtros">
+            <button class="ativo" data-filtro="todos">Todos</button>
+            <button data-filtro="vencido">Vencidos</button>
+            <button data-filtro="critico">Críticos</button>
+            <button data-filtro="atencao">Atenção</button>
+            <button data-filtro="em_dia">Em dia</button>
+          </div>
+        </div>
+        <div style="overflow-x:auto;">
+          <table>
+            <thead>
+              <tr>
+                <th>Nº</th><th>Tipo</th><th>Localização</th><th>Vence em</th>
+                <th>Situação</th><th>Status</th><th>Ações</th>
+              </tr>
+            </thead>
+            <tbody id="tabela-extintores">
+              <tr><td colspan="7" class="vazio">Carregando extintores...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </section>
+
+    <!-- PÁGINA 2: INSPECIONAR -->
+    <section id="pagina-inspecao" style="display: none;">
+      <div class="card">
+        <div class="card-header" style="margin-bottom: 20px;">
+          <h2>🔍 Pronto para Inspecionar</h2>
+          <input type="text" id="busca-inspecao" class="busca" style="max-width: 300px;" placeholder="Filtrar por nº ou local..." />
+        </div>
+        <div class="grid-inspecao" id="grid-inspecao">
+          <!-- Cards gerados via JS -->
+        </div>
       </div>
     </section>
   </main>
@@ -553,6 +623,30 @@
       o.addEventListener('click', (e) => { if (e.target === o) o.classList.remove('aberto'); });
     });
 
+    // ---------- NAVEGAÇÃO POR ABAS ----------
+    const tabVisao = document.getElementById('tab-visao');
+    const tabInspecao = document.getElementById('tab-inspecao');
+    const paginaVisao = document.getElementById('pagina-visao');
+    const paginaInspecao = document.getElementById('pagina-inspecao');
+
+    function mudarAba(aba) {
+      if (aba === 'visao') {
+        tabVisao.classList.add('ativo');
+        tabInspecao.classList.remove('ativo');
+        paginaVisao.style.display = 'block';
+        paginaInspecao.style.display = 'none';
+      } else {
+        tabInspecao.classList.add('ativo');
+        tabVisao.classList.remove('ativo');
+        paginaVisao.style.display = 'none';
+        paginaInspecao.style.display = 'block';
+        renderizarCardsInspecao(); // Atualiza ao abrir
+      }
+    }
+
+    tabVisao.addEventListener('click', () => mudarAba('visao'));
+    tabInspecao.addEventListener('click', () => mudarAba('inspecao'));
+
     // ---------- CARREGAR DADOS ----------
     async function carregarExtintores() {
       const { data, error } = await supabase
@@ -569,12 +663,13 @@
       renderizarTudo();
     }
 
-    // ---------- RENDERIZAÇÃO ----------
+    // ---------- RENDERIZAÇÃO GERAL ----------
     function renderizarTudo() {
       renderizarKPIs();
       renderizarGrafico();
       renderizarResumo();
       renderizarTabela();
+      renderizarCardsInspecao();
     }
 
     function renderizarKPIs() {
@@ -626,6 +721,7 @@
         total ? `${total} extintor(es) no sistema. Ordenados por vencimento.` : 'Nenhum extintor cadastrado ainda.';
     }
 
+    // ---------- TABELA ----------
     function renderizarTabela() {
       const tbody = document.getElementById('tabela-extintores');
       const lista = filtroAtual === 'todos'
@@ -667,6 +763,10 @@
         </tr>
       `}).join('');
 
+      vincularEventosTabela(tbody);
+    }
+
+    function vincularEventosTabela(tbody) {
       tbody.querySelectorAll('[data-inspecionar]').forEach(b => {
         b.addEventListener('click', () => abrirInspecao(b.dataset.inspecionar, b.dataset.numero));
       });
@@ -681,7 +781,59 @@
       });
     }
 
-    // ---------- FILTROS ----------
+    // ---------- CARDS DE INSPEÇÃO ----------
+    function renderizarCardsInspecao() {
+      const container = document.getElementById('grid-inspecao');
+      if (!container) return;
+      
+      const ativos = extintores.filter(e => e.status !== 'descartado');
+      const busca = document.getElementById('busca-inspecao')?.value.toLowerCase().trim() || '';
+      
+      const filtrados = ativos.filter(e => {
+        const txt = [e.numero, e.tipo, e.setor, e.local].join(' ').toLowerCase();
+        return txt.includes(busca);
+      });
+
+      if (!filtrados.length) {
+        container.innerHTML = '<p class="vazio">Nenhum extintor disponível para inspeção.</p>';
+        return;
+      }
+
+      container.innerHTML = filtrados.map(e => {
+        const st = e.status || 'ativo';
+        const sit = situacao(e);
+        const dias = textoDias(e.data_validade);
+        
+        return `
+          <div class="card-inspecao ${sit}">
+            <div class="card-inspecao-header">
+              <div>
+                <h3>🧯 Nº ${e.numero}</h3>
+                <span class="tipo-cap">${e.tipo} • ${e.capacidade}</span>
+              </div>
+              <span class="status ${sit}">${labelSituacao(sit)}</span>
+            </div>
+            
+            <div class="card-inspecao-info">
+              <div>📍 <strong>Local:</strong> ${e.setor || '-'} ${e.local ? ' - ' + e.local : ''}</div>
+              <div>⏳ <strong>Vence em:</strong> <span style="color:${corDias(e.data_validade)};font-weight:600;">${dias}</span></div>
+              ${st === 'manutencao' ? '<div style="color:#854d0e;font-weight:600;">🚧 Em Manutenção</div>' : ''}
+            </div>
+
+            <button class="btn-inspecionar-card" data-inspecionar="${e.id}" data-numero="${e.numero}">
+              📝 Fazer Inspeção
+            </button>
+          </div>
+        `;
+      }).join('');
+
+      // Vincula eventos dos botões
+      container.querySelectorAll('[data-inspecionar]').forEach(b => {
+        b.addEventListener('click', () => abrirInspecao(b.dataset.inspecionar, b.dataset.numero));
+      });
+    }
+
+    // ---------- FILTROS E BUSCA ----------
     document.querySelectorAll('#filtros button').forEach(b => {
       b.addEventListener('click', () => {
         document.querySelectorAll('#filtros button').forEach(x => x.classList.remove('ativo'));
@@ -691,15 +843,17 @@
       });
     });
 
-    // ---------- BUSCA ----------
     document.getElementById('busca').addEventListener('input', (e) => {
       const q = e.target.value.toLowerCase().trim();
       const tbody = document.getElementById('tabela-extintores');
+      
       const filtrados = extintores.filter(ex => {
         const txt = [ex.numero, ex.tipo, ex.setor, ex.local].join(' ').toLowerCase();
         return txt.includes(q);
       });
+      
       if (!q) { renderizarTabela(); return; }
+      
       if (!filtrados.length) {
         tbody.innerHTML = '<tr><td colspan="7" class="vazio">Nenhum resultado.</td></tr>';
         return;
@@ -735,21 +889,12 @@
         </tr>
       `}).join('');
       
-      tbody.querySelectorAll('[data-inspecionar]').forEach(b => {
-        b.addEventListener('click', () => abrirInspecao(b.dataset.inspecionar, b.dataset.numero));
-      });
-      tbody.querySelectorAll('[data-historico]').forEach(b => {
-        b.addEventListener('click', () => abrirHistorico(b.dataset.historico, b.dataset.numero));
-      });
-      tbody.querySelectorAll('[data-editar]').forEach(b => {
-        b.addEventListener('click', () => abrirEdicao(b.dataset.editar));
-      });
-      tbody.querySelectorAll('[data-excluir]').forEach(b => {
-        b.addEventListener('click', () => excluirExtintor(b.dataset.excluir, b.dataset.numero));
-      });
+      vincularEventosTabela(tbody);
     });
 
-    // ---------- NOVO EXTINTOR / EDITAR ----------
+    document.getElementById('busca-inspecao')?.addEventListener('input', renderizarCardsInspecao);
+
+    // ---------- NOVO / EDITAR EXTINTOR ----------
     document.getElementById('btn-novo-extintor').addEventListener('click', () => {
       document.getElementById('form-extintor').reset();
       document.getElementById('f-id').value = '';
