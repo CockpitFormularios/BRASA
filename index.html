@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BRASA — Login</title>
+  <style>
+    :root {
+      --vermelho: #e63946;
+      --laranja: #f77f00;
+      --escuro: #1a1a1a;
+      --cinza-borda: #e5e7eb;
+      --texto-suave: #6b7280;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: linear-gradient(135deg, #1a1a1a 0%, #2b1410 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      color: var(--escuro);
+    }
+    .card {
+      background: #fff;
+      width: 100%;
+      max-width: 400px;
+      padding: 40px 32px;
+      border-radius: 16px;
+      box-shadow: 0 20px 50px rgba(0,0,0,.4);
+    }
+    .logo {
+      font-size: 1.6rem;
+      font-weight: 800;
+      text-align: center;
+      margin-bottom: 24px;
+      color: var(--vermelho);
+    }
+    h1 { font-size: 1.5rem; text-align: center; margin-bottom: 6px; }
+    .subtitulo {
+      text-align: center;
+      color: var(--texto-suave);
+      font-size: .9rem;
+      margin-bottom: 28px;
+    }
+    .campo { margin-bottom: 18px; }
+    .campo label {
+      display: block;
+      font-size: .85rem;
+      font-weight: 600;
+      margin-bottom: 6px;
+      color: #374151;
+    }
+    .campo input {
+      width: 100%;
+      padding: 11px 14px;
+      border: 1px solid var(--cinza-borda);
+      border-radius: 8px;
+      font-size: .95rem;
+      outline: none;
+      transition: border-color .2s;
+    }
+    .campo input:focus { border-color: var(--vermelho); }
+    .btn {
+      width: 100%;
+      background: linear-gradient(135deg, var(--vermelho), var(--laranja));
+      color: #fff;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-size: .95rem;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 6px;
+      transition: transform .15s, filter .15s;
+    }
+    .btn:hover { transform: translateY(-1px); filter: brightness(1.05); }
+    .btn:disabled { opacity: .6; cursor: not-allowed; transform: none; }
+    .msg {
+      color: var(--vermelho);
+      font-size: .85rem;
+      margin-top: 14px;
+      text-align: center;
+      min-height: 20px;
+    }
+    .msg.sucesso { color: #16a34a; }
+    .troca {
+      text-align: center;
+      margin-top: 24px;
+      font-size: .88rem;
+      color: var(--texto-suave);
+    }
+    .troca a {
+      color: var(--vermelho);
+      font-weight: 600;
+      text-decoration: none;
+      margin-left: 4px;
+      cursor: pointer;
+    }
+    .troca a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+
+  <div class="card">
+    <div class="logo">🔥 BRASA</div>
+    <h1 id="titulo">Entrar</h1>
+    <p class="subtitulo" id="subtitulo">Acesse sua conta para continuar</p>
+
+    <form id="form">
+      <div class="campo">
+        <label for="email">E-mail</label>
+        <input type="email" id="email" required placeholder="voce@empresa.com" />
+      </div>
+      <div class="campo">
+        <label for="senha">Senha</label>
+        <input type="password" id="senha" required placeholder="••••••••" minlength="6" />
+      </div>
+      <button type="submit" class="btn" id="btn">Entrar</button>
+      <div class="msg" id="msg"></div>
+    </form>
+
+    <div class="troca">
+      <span id="texto-troca">Não tem conta?</span>
+      <a id="link-troca">Criar agora</a>
+    </div>
+  </div>
+
+  <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+
+    const supabase = createClient(
+      'https://vludpyhesuyajwqmtlvs.supabase.co',
+      'sb_publishable_X-uj41aebGg54ezG85Ffxw_JUz7S5wE'
+    );
+
+    // Se já estiver logado, vai direto pro dashboard
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) window.location.href = 'dashboard.html';
+
+    const form = document.getElementById('form');
+    const titulo = document.getElementById('titulo');
+    const subtitulo = document.getElementById('subtitulo');
+    const btn = document.getElementById('btn');
+    const msg = document.getElementById('msg');
+    const linkTroca = document.getElementById('link-troca');
+    const textoTroca = document.getElementById('texto-troca');
+
+    let modoCadastro = new URLSearchParams(location.search).get('modo') === 'cadastro';
+
+    function atualizarModo() {
+      if (modoCadastro) {
+        titulo.textContent = 'Criar conta';
+        subtitulo.textContent = 'Cadastre-se para gerenciar extintores';
+        btn.textContent = 'Cadastrar';
+        textoTroca.textContent = 'Já tem conta?';
+        linkTroca.textContent = 'Entrar';
+      } else {
+        titulo.textContent = 'Entrar';
+        subtitulo.textContent = 'Acesse sua conta para continuar';
+        btn.textContent = 'Entrar';
+        textoTroca.textContent = 'Não tem conta?';
+        linkTroca.textContent = 'Criar agora';
+      }
+      msg.textContent = '';
+      msg.classList.remove('sucesso');
+    }
+    atualizarModo();
+
+    linkTroca.addEventListener('click', () => {
+      modoCadastro = !modoCadastro;
+      atualizarModo();
+    });
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      msg.textContent = '';
+      msg.classList.remove('sucesso');
+      btn.disabled = true;
+      btn.textContent = 'Aguarde...';
+
+      const email = document.getElementById('email').value.trim();
+      const senha = document.getElementById('senha').value;
+
+      try {
+        if (modoCadastro) {
+          const { data, error } = await supabase.auth.signUp({ email, password: senha });
+          if (error) throw error;
+          if (data.user && !data.session) {
+            msg.textContent = 'Cadastro feito! Verifique seu e-mail para confirmar.';
+            msg.classList.add('sucesso');
+          } else {
+            window.location.href = 'dashboard.html';
+          }
+        } else {
+          const { error } = await supabase.auth.signInWithPassword({ email, password: senha });
+          if (error) throw error;
+          window.location.href = 'dashboard.html';
+        }
+      } catch (err) {
+        msg.textContent = traduzErro(err.message);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = modoCadastro ? 'Cadastrar' : 'Entrar';
+      }
+    });
+
+    function traduzErro(m) {
+      if (m.includes('Invalid login credentials')) return 'E-mail ou senha incorretos.';
+      if (m.includes('User already registered')) return 'Este e-mail já está cadastrado.';
+      if (m.includes('Password should be at least')) return 'A senha é muito curta (mínimo 6 caracteres).';
+      if (m.includes('Unable to validate email')) return 'E-mail inválido.';
+      if (m.includes('Email not confirmed')) return 'Confirme seu e-mail antes de entrar.';
+      return m;
+    }
+  </script>
+
+</body>
+</html>
