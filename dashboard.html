@@ -187,6 +187,59 @@
     .grid-meio { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
     .chart-wrap { position: relative; height: 240px; }
 
+    /* ---------- QR CODE E ALERTAS ---------- */
+    .qr-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: #fafafa;
+      border: 1px dashed var(--cinza-borda);
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 16px;
+      text-align: center;
+    }
+    .qr-container img {
+      width: 130px;
+      height: 130px;
+      border-radius: 8px;
+      margin-bottom: 8px;
+    }
+    .qr-container p {
+      font-size: 0.8rem;
+      color: var(--texto-suave);
+      font-weight: 600;
+    }
+    .alerta-lista {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .alerta-lista li {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px;
+      background: #fff8f8;
+      border: 1px solid #fee2e2;
+      border-radius: 8px;
+      font-size: 0.85rem;
+    }
+    .alerta-lista li span.nome {
+      font-weight: 700;
+      color: var(--escuro);
+    }
+    .alerta-lista li span.dias {
+      background: var(--vermelho);
+      color: #fff;
+      padding: 2px 8px;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 700;
+    }
+
     /* ---------- TABELA (DESKTOP) ---------- */
     .card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; flex-wrap: wrap; gap: 12px; }
     .filtros { display: flex; gap: 8px; flex-wrap: wrap; }
@@ -747,21 +800,25 @@
         </div>
 
         <div class="grid-meio" style="margin-bottom: 16px;">
+          <!-- Coluna 1: Gráfico -->
           <div class="card">
             <h2>📊 Semáforo de Vencimentos</h2>
             <div class="chart-wrap"><canvas id="grafico"></canvas></div>
           </div>
-          <div class="card">
-            <h2>📋 Resumo do Sistema</h2>
-            <p style="font-size:.85rem;color:var(--texto-suave);margin-bottom:12px;" id="resumo-lista">
-              Carregando...
-            </p>
-            <div style="margin-top:20px; font-size:0.85rem; color:var(--texto-suave); line-height: 1.6;">
-              <strong>Regra de Vencimento:</strong><br>
-              O sistema calcula automaticamente a data mais crítica entre:<br>
-              • Manutenção (Recarga) + 1 ano<br>
-              • Teste Hidrostático + 5 anos
+          
+          <!-- Coluna 2: QR Code e Próximos a Vencer -->
+          <div class="card" style="display: flex; flex-direction: column;">
+            <h2>📱 Acesso Rápido</h2>
+            
+            <div class="qr-container">
+              <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://vludpyhesuyajwqmtlvs.supabase.co" alt="QR Code para Inspeção" id="qr-code-img">
+              <p>Aponte a câmera para ir à aba de Inspeção</p>
             </div>
+
+            <h2 style="margin-top: 10px;">⚠️ Próximos a Vencer (30 dias)</h2>
+            <ul class="alerta-lista" id="lista-proximos-vencer">
+              <li style="justify-content: center; color: var(--texto-suave);">Nenhum extintor vence nos próximos 30 dias.</li>
+            </ul>
           </div>
         </div>
 
@@ -1264,7 +1321,7 @@
     function renderizarTudo() {
       renderizarKPIs();
       renderizarGrafico();
-      renderizarResumo();
+      renderizarProximosVencer();
       renderizarTabela();
       renderizarCardsMobile();
       renderizarCardsInspecao();
@@ -1326,10 +1383,31 @@
       });
     }
 
-    function renderizarResumo() {
-      const total = extintores.length;
-      document.getElementById('resumo-lista').textContent =
-        total ? `${total} extintor(es) no sistema. Ordenados por vencimento.` : 'Nenhum extintor cadastrado ainda.';
+    // ---------- NOVO CARD: PRÓXIMOS A VENCER ----------
+    function renderizarProximosVencer() {
+      const ul = document.getElementById('lista-proximos-vencer');
+      
+      // Pega os extintores que vencem entre hoje e daqui a 30 dias
+      const proximos = extintores.filter(e => {
+        const dias = diffDias(e.data_validade);
+        return e.status !== 'descartado' && dias >= 0 && dias <= 30;
+      }).sort((a, b) => diffDias(a.data_validade) - diffDias(b.data_validade));
+
+      if (proximos.length === 0) {
+        ul.innerHTML = '<li style="justify-content: center; color: var(--texto-suave);">Nenhum extintor vence nos próximos 30 dias.</li>';
+        return;
+      }
+
+      ul.innerHTML = proximos.map(e => {
+        const dias = diffDias(e.data_validade);
+        const labelDias = dias === 0 ? 'Hoje' : `Em ${dias} dias`;
+        return `
+          <li>
+            <span class="nome">Nº ${e.numero} - ${e.setor || 'S/ Local'}</span>
+            <span class="dias">${labelDias}</span>
+          </li>
+        `;
+      }).join('');
     }
 
     // ---------- TABELA (DESKTOP) ----------
