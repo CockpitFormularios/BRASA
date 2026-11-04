@@ -1213,7 +1213,7 @@
     <img src="" alt="Zoom da Foto" id="lightbox-img" />
   </div>
 
-  <!-- SCRIPT PARA CRIAR MANIFEST E SERVICE WORKER -->
+  <!-- SCRIPT PARA CRIAR MANIFEST (PWA BÁSICO) -->
   <script>
     const manifest = {
       name: "BRASA - Gestão de Extintores",
@@ -1241,19 +1241,6 @@
     const blob = new Blob([stringManifest], {type: 'application/json'});
     const manifestURL = URL.createObjectURL(blob);
     document.querySelector('#manifest-link').setAttribute('href', manifestURL);
-
-    if ('serviceWorker' in navigator) {
-      const swCode = `
-        self.addEventListener('install', (e) => { self.skipWaiting(); });
-        self.addEventListener('activate', (e) => { return self.clients.claim(); });
-        self.addEventListener('fetch', (e) => {
-          e.respondWith(fetch(e.request).catch(() => new Response('')));
-        });
-      `;
-      const swBlob = new Blob([swCode], {type: 'application/javascript'});
-      const swURL = URL.createObjectURL(swBlob);
-      navigator.serviceWorker.register(swURL).catch(err => { console.log('Erro no SW:', err); });
-    }
   </script>
 
   <script type="module">
@@ -1300,17 +1287,14 @@
     const LOGO_PADRAO = 'https://rvtquhqeivrhcdoreghu.supabase.co/storage/v1/object/public/cipa-branding/logo-inspefrot.png';
     let configLogoUrl = localStorage.getItem('brasa_logo_url') || LOGO_PADRAO;
 
-    // Preenche o campo com a URL salva ou a padrão
     document.getElementById('config-logo-url').value = configLogoUrl;
     
-    // Mostra o preview da logo atual na tela de configurações
     const previewLogo = document.getElementById('preview-config-logo');
     if (configLogoUrl) {
       previewLogo.src = configLogoUrl;
       previewLogo.style.display = 'inline-block';
     }
 
-    // Atualiza o preview ao digitar
     document.getElementById('config-logo-url').addEventListener('input', (e) => {
       const url = e.target.value.trim();
       if (url) {
@@ -1323,7 +1307,6 @@
 
     window.salvarConfiguracoes = function() {
       const url = document.getElementById('config-logo-url').value.trim();
-      // Se estiver vazio, salva a padrão
       configLogoUrl = url ? url : LOGO_PADRAO; 
       localStorage.setItem('brasa_logo_url', configLogoUrl);
       toast('✅ Configurações salvas com sucesso!');
@@ -1445,18 +1428,21 @@
 
     // ---------- CARREGAR DADOS ----------
     async function carregarExtintores() {
-      const { data, error } = await supabase
-        .from('extintores')
-        .select('*')
-        .order('data_validade', { ascending: true });
+      try {
+        const { data, error } = await supabase
+          .from('extintores')
+          .select('*')
+          .order('data_validade', { ascending: true });
 
-      if (error) {
-        console.error(error);
-        toast('Erro ao carregar extintores', 'erro');
-        return;
+        if (error) throw error;
+        
+        extintores = data || [];
+        renderizarTudo();
+      } catch (err) {
+        console.error('Erro ao buscar dados:', err);
+        document.getElementById('tabela-extintores').innerHTML = '<tr><td colspan="7" class="vazio">❌ Erro ao conectar ao banco. Tente recarregar a página.</td></tr>';
+        document.getElementById('lista-alertas').innerHTML = '<li style="justify-content: center; color: var(--vermelho);">Erro ao carregar dados.</li>';
       }
-      extintores = data || [];
-      renderizarTudo();
     }
 
     // ---------- RENDERIZAÇÃO GERAL ----------
@@ -2521,12 +2507,23 @@
     // ---------- GERAR / IMPRIMIR QR CODES ----------
     let htmlQrIndividualParaImprimir = '';
 
+    function obterUrlBaseVisualizacao() {
+      let urlAtual = window.location.href.split('?')[0];
+      if (urlAtual.includes('dashboard.html')) {
+        return urlAtual.replace('dashboard.html', 'visualizar.html');
+      } else if (urlAtual.includes('index.html')) {
+        return urlAtual.replace('index.html', 'visualizar.html');
+      } else {
+        return urlAtual + (urlAtual.endsWith('/') ? '' : '/') + 'visualizar.html';
+      }
+    }
+
     function abrirQRCode(id, numero) {
       const ext = extintores.find(e => e.id === id);
       if(!ext) return;
 
-      const urlAtual = window.location.href.split('?')[0];
-      const urlDestino = `${urlAtual}?extintor=${id}`;
+      const urlBase = obterUrlBaseVisualizacao();
+      const urlDestino = `${urlBase}?extintor=${id}`;
       const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(urlDestino)}`;
       
       // Configura o modal visual
@@ -2570,7 +2567,7 @@
         return;
       }
 
-      const urlAtual = window.location.href.split('?')[0];
+      const urlBase = obterUrlBaseVisualizacao();
       
       let htmlLote = `
         <div style="background:#fff; padding: 10px;">
@@ -2581,7 +2578,7 @@
       extintores.forEach(ext => {
         if (ext.status === 'descartado') return; // Pula inativos
         
-        const urlDestino = `${urlAtual}?extintor=${ext.id}`;
+        const urlDestino = `${urlBase}?extintor=${ext.id}`;
         const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(urlDestino)}`;
 
         htmlLote += `
