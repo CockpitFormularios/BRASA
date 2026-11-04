@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Inspeção de Extintor — Visualização</title>
+  
+  <link rel="icon" type="image/png" href="https://vludpyhesuyajwqmtlvs.supabase.co/storage/v1/object/public/LOGO/iconeBRASA.png" />
+  
+  <style>
+    :root {
+      --vermelho: #e63946;
+      --laranja: #f77f00;
+      --escuro: #1a1a1a;
+      --cinza: #f5f5f5;
+      --cinza-borda: #e5e7eb;
+      --texto-suave: #6b7280;
+      --sombra: 0 4px 12px rgba(0,0,0,.1);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: var(--cinza);
+      color: var(--escuro);
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    /* HEADER */
+    .header-pub {
+      background: #fff;
+      border-radius: 16px;
+      padding: 20px;
+      text-align: center;
+      box-shadow: var(--sombra);
+      border-top: 5px solid var(--vermelho);
+    }
+    .header-pub img {
+      height: 40px;
+      object-fit: contain;
+      margin-bottom: 12px;
+    }
+    .header-pub h1 {
+      font-size: 1.4rem;
+      color: var(--vermelho);
+      margin-bottom: 4px;
+    }
+    .header-pub p {
+      font-size: 0.9rem;
+      color: var(--texto-suave);
+    }
+
+    /* CARD EXTINTOR */
+    .extintor-info {
+      background: #fff;
+      border-radius: 12px;
+      padding: 16px;
+      box-shadow: var(--sombra);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .extintor-info .top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--cinza-borda);
+      padding-bottom: 10px;
+      margin-bottom: 4px;
+    }
+    .extintor-info h2 { font-size: 1.2rem; }
+    .extintor-info .dados { font-size: 0.9rem; color: #444; }
+
+    /* HISTÓRICO DE INSPEÇÕES */
+    .titulo-secao {
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin-top: 10px;
+      margin-bottom: 4px;
+      color: var(--escuro);
+    }
+
+    .hist-card {
+      background: #fff;
+      border-radius: 12px;
+      padding: 16px;
+      box-shadow: var(--sombra);
+      border-left: 5px solid #16a34a;
+    }
+    .hist-card.nao_conforme { border-left-color: #dc2626; }
+
+    .hist-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      border-bottom: 1px solid var(--cinza-borda);
+      padding-bottom: 10px;
+      margin-bottom: 10px;
+    }
+    .hist-data { font-weight: 700; font-size: 0.95rem; }
+    .hist-mes { font-size: 0.8rem; color: var(--vermelho); font-weight: 600; margin-top: 2px; }
+    .hist-inspetor { font-size: 0.8rem; color: var(--texto-suave); margin-top: 4px; }
+
+    .badge {
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+    .badge.conforme { background: #dcfce7; color: #166534; }
+    .badge.nao_conforme { background: #fee2e2; color: #991b1b; }
+
+    .checklist-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+      margin-bottom: 16px;
+      list-style: none;
+    }
+    .checklist-grid li {
+      font-size: 0.8rem;
+      background: #f9f9f9;
+      padding: 6px;
+      border-radius: 6px;
+    }
+
+    .obs-box {
+      font-size: 0.85rem;
+      background: #f0f9ff;
+      padding: 10px;
+      border-radius: 8px;
+      border-left: 3px solid #0284c7;
+      margin-bottom: 16px;
+    }
+
+    .fotos-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    .foto-item {
+      border-radius: 8px;
+      overflow: hidden;
+      border: 1px solid var(--cinza-borda);
+      cursor: zoom-in;
+    }
+    .foto-item img {
+      width: 100%;
+      height: 120px;
+      object-fit: cover;
+      display: block;
+    }
+    .foto-item span {
+      display: block;
+      text-align: center;
+      font-size: 0.75rem;
+      padding: 4px;
+      background: var(--cinza);
+      font-weight: 600;
+      color: var(--texto-suave);
+    }
+
+    /* LIGHTBOX */
+    .lightbox {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.9);
+      display: none; align-items: center; justify-content: center;
+      z-index: 3000; cursor: zoom-out; padding: 20px;
+    }
+    .lightbox.aberto { display: flex; }
+    .lightbox img {
+      max-width: 100%; max-height: 100%; object-fit: contain;
+      border-radius: 8px;
+    }
+
+    /* LOADING E VAZIO */
+    .loading { text-align: center; padding: 40px; font-weight: 600; color: var(--texto-suave); }
+    .vazio { text-align: center; padding: 30px; color: var(--texto-suave); background: #fff; border-radius: 12px; }
+
+    @media (max-width: 600px) {
+      .checklist-grid { grid-template-columns: 1fr; }
+      .fotos-grid { grid-template-columns: 1fr; }
+      body { padding: 10px; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container" id="app-container">
+    <div class="loading">Carregando informações do extintor...</div>
+  </div>
+
+  <!-- Lightbox para ampliar as fotos -->
+  <div class="lightbox" id="lightbox">
+    <img src="" alt="Zoom da Foto" id="lightbox-img" />
+  </div>
+
+  <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+
+    // Inicializa o Supabase (as mesmas chaves do index.html)
+    const supabase = createClient(
+      'https://vludpyhesuyajwqmtlvs.supabase.co',
+      'sb_publishable_X-uj41aebGg54ezG85Ffxw_JUz7S5wE'
+    );
+
+    const container = document.getElementById('app-container');
+
+    // Função para formatar mês por extenso
+    function formatarMesAno(mesRef) {
+      if (!mesRef) return '';
+      const [ano, mes] = mesRef.split('-');
+      const nomesMeses = [
+        "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", 
+        "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
+      ];
+      return `${nomesMeses[parseInt(mes)-1]} de ${ano}`;
+    }
+
+    // Pega o ID do extintor na URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const extintorId = urlParams.get('extintor');
+
+    if (!extintorId) {
+      container.innerHTML = '<div class="vazio">Nenhum extintor selecionado. Escaneie o QR Code novamente.</div>';
+    } else {
+      carregarDados();
+    }
+
+    async function carregarDados() {
+      try {
+        // 1. Busca os dados do Extintor
+        const { data: extintor, error: errExt } = await supabase
+          .from('extintores')
+          .select('*')
+          .eq('id', extintorId)
+          .single();
+
+        if (errExt || !extintor) throw new Error('Extintor não encontrado.');
+
+        // 2. Busca as inspeções deste extintor
+        const { data: inspecoes, error: errInsp } = await supabase
+          .from('inspecoes')
+          .select('*')
+          .eq('extintor_id', extintorId)
+          .order('data_inspecao', { ascending: false });
+
+        if (errInsp) throw new Error('Erro ao carregar inspeções.');
+
+        renderizar(extintor, inspecoes);
+
+      } catch (err) {
+        console.error(err);
+        container.innerHTML = `<div class="vazio">❌ ${err.message}</div>`;
+      }
+    }
+
+    function renderizar(ext, inspecoes) {
+      // Cabeçalho e Info do Extintor
+      let html = `
+        <div class="header-pub">
+          <img src="https://rvtquhqeivrhcdoreghu.supabase.co/storage/v1/object/public/cipa-branding/logo-inspefrot.png" alt="Logo Empresa" onerror="this.style.display='none'">
+          <h1>Histórico de Inspeções</h1>
+          <p>Consulte abaixo as verificações mensais realizadas.</p>
+        </div>
+
+        <div class="extintor-info">
+          <div class="top">
+            <h2>🧯 Nº ${ext.numero}</h2>
+          </div>
+          <div class="dados"><strong>Tipo:</strong> ${ext.tipo}</div>
+          <div class="dados"><strong>Capacidade:</strong> ${ext.capacidade}</div>
+          <div class="dados"><strong>Local:</strong> ${ext.setor || '-'} ${ext.local ? ' - ' + ext.local : ''}</div>
+          <div class="dados"><strong>Vencimento do Equipamento:</strong> ${new Date(ext.data_validade + 'T12:00:00').toLocaleDateString('pt-BR')}</div>
+        </div>
+
+        <div class="titulo-secao">📋 Inspeções Registradas</div>
+      `;
+
+      if (!inspecoes || inspecoes.length === 0) {
+        html += `<div class="vazio">Nenhuma inspeção registrada para este extintor.</div>`;
+      } else {
+        inspecoes.forEach(i => {
+          const dtObj = new Date(i.data_inspecao);
+          const dataFormatada = dtObj.toLocaleDateString('pt-BR');
+          const horaFormatada = dtObj.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+          const isConforme = i.resultado === 'conforme';
+
+          // Formata checklist
+          const itens = i.checklist ? Object.entries(i.checklist).map(([k, v]) =>
+            `<li>${v ? '✅' : '❌'} ${k.replace('_ok','').replace(/_/g,' ')}</li>`
+          ).join('') : '';
+
+          // Fotos
+          let fotosHtml = '';
+          if (i.foto_inteiro_url || i.foto_selo_url) {
+            fotosHtml = `<div class="fotos-grid">
+              ${i.foto_inteiro_url ? `
+                <div class="foto-item" onclick="abrirZoom('${i.foto_inteiro_url}')">
+                  <img src="${i.foto_inteiro_url}" alt="Extintor inteiro" />
+                  <span>🧯 Extintor Inteiro</span>
+                </div>` : ''}
+              ${i.foto_selo_url ? `
+                <div class="foto-item" onclick="abrirZoom('${i.foto_selo_url}')">
+                  <img src="${i.foto_selo_url}" alt="Selo de validade" />
+                  <span>🏷️ Selo de Validade</span>
+                </div>` : ''}
+            </div>`;
+          }
+
+          html += `
+            <div class="hist-card ${isConforme ? 'conforme' : 'nao_conforme'}">
+              <div class="hist-header">
+                <div>
+                  <div class="hist-mes">📅 Referência: ${formatarMesAno(i.mes_referencia)}</div>
+                  <div class="hist-data">${dataFormatada} às ${horaFormatada}</div>
+                  <div class="hist-inspetor">👤 Inspetor: ${i.inspetor || '-'}</div>
+                </div>
+                <div>
+                  <span class="badge ${isConforme ? 'conforme' : 'nao_conforme'}">
+                    ${isConforme ? 'Conforme' : 'Não Conforme'}
+                  </span>
+                </div>
+              </div>
+
+              <ul class="checklist-grid">${itens}</ul>
+
+              ${i.observacoes ? `<div class="obs-box"><strong>💬 Obs:</strong> ${i.observacoes}</div>` : ''}
+
+              ${fotosHtml}
+            </div>
+          `;
+        });
+      }
+
+      container.innerHTML = html;
+    }
+
+    // Lógica do Lightbox
+    const lightbox = document.getElementById('lightbox');
+    const lightboxImg = document.getElementById('lightbox-img');
+
+    lightbox.addEventListener('click', () => {
+      lightbox.classList.remove('aberto');
+      setTimeout(() => { lightboxImg.src = ''; }, 300);
+    });
+
+    // Expor função para o escopo global (usada no HTML gerado)
+    window.abrirZoom = function(url) {
+      lightboxImg.src = url;
+      lightbox.classList.add('aberto');
+    }
+
+  </script>
+</body>
+</html>
