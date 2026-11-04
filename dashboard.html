@@ -1,4 +1,4 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
@@ -294,20 +294,22 @@
     .btn-card-acao.ativar { color: #16a34a; border-color: #bbf7d0; }
     .btn-card-acao.ativar:hover { background: #f0fdf4; border-color: #16a34a; }
 
-    /* ---------- MODAL ---------- */
+    /* ---------- MODAL (AJUSTADO) ---------- */
     .modal-overlay {
       position: fixed; inset: 0;
       background: rgba(0,0,0,.6);
       display: none; align-items: center; justify-content: center;
-      z-index: 1000; padding: 20px;
+      z-index: 1000; padding: 16px;
     }
     .modal-overlay.aberto { display: flex; }
     .modal {
       background: #fff; border-radius: 16px; width: 100%;
-      max-width: 560px; max-height: 90vh;
+      max-width: 620px; 
+      max-height: 90vh; /* Trava a altura total do modal */
       display: flex; flex-direction: column;
       box-shadow: 0 20px 50px rgba(0,0,0,.3);
       animation: slideUp .2s ease;
+      overflow: hidden; /* Impede que o conteúdo vaze para fora das bordas */
     }
     @keyframes slideUp {
       from { transform: translateY(20px); opacity: 0; }
@@ -316,6 +318,7 @@
     .modal-header {
       padding: 20px 24px; border-bottom: 1px solid var(--cinza-borda);
       display: flex; justify-content: space-between; align-items: center;
+      flex-shrink: 0; /* Impede que o header encolha */
     }
     .modal-header h3 { font-size: 1.1rem; }
     .modal-close {
@@ -323,10 +326,18 @@
       cursor: pointer; color: var(--texto-suave); line-height: 1;
     }
     .modal-close:hover { color: var(--vermelho); }
-    .modal-body { padding: 20px 24px; overflow-y: auto; flex: 1; }
+    
+    .modal-body { 
+      padding: 20px 24px; 
+      overflow-y: auto; /* Permite rolar o conteúdo */
+      flex: 1; 
+    }
+    
     .modal-footer {
       padding: 16px 24px; border-top: 1px solid var(--cinza-borda);
       display: flex; justify-content: flex-end; gap: 10px;
+      flex-shrink: 0; /* Impede que os botões sejam esmagados */
+      background: #fff;
     }
 
     /* ---------- FORMULÁRIO ---------- */
@@ -388,6 +399,8 @@
       padding: 8px 0;
       border-bottom: 1px dashed var(--cinza-borda);
     }
+    
+    /* ---------- UPLOAD DE FOTOS (AJUSTADO) ---------- */
     .upload-area {
       border: 2px dashed var(--cinza-borda);
       border-radius: 10px;
@@ -397,6 +410,11 @@
       transition: all .15s;
       background: #fff;
       position: relative;
+      min-height: 120px; /* Altura mínima para não quebrar o layout */
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
     }
     .upload-area:hover { border-color: var(--vermelho); background: #fff8f8; }
     .upload-area.obrigatorio-faltando { border-color: #dc2626; background: #fef2f2; }
@@ -406,10 +424,12 @@
     .upload-area .icone { font-size: 1.8rem; display: block; margin-bottom: 6px; }
     .upload-area .texto { font-size: .82rem; color: var(--texto-suave); font-weight: 500; }
     .upload-area .texto strong { color: var(--escuro); }
+    
+    /* Ajuste para a imagem não estourar a tela no upload */
     .preview-foto {
       margin-top: 10px;
       max-width: 100%;
-      max-height: 140px;
+      max-height: 100px; 
       border-radius: 8px;
       object-fit: cover;
       display: none;
@@ -1588,4 +1608,4 @@
   </script>
 
 </body>
-</html> C
+</html>
