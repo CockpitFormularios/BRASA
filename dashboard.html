@@ -11,9 +11,9 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="BRASA" />
-  <!-- Coloque a URL exata do ícone aqui (o arquivo deve estar público no Supabase) -->
   <link rel="apple-touch-icon" href="https://vludpyhesuyajwqmtlvs.supabase.co/storage/v1/object/public/LOGO/iconeBRASA.png" />
   <link rel="icon" type="image/png" href="https://vludpyhesuyajwqmtlvs.supabase.co/storage/v1/object/public/LOGO/iconeBRASA.png" />
+  <link rel="manifest" id="manifest-link" />
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   
@@ -539,7 +539,6 @@
        RESPONSIVO (CELULAR E TABLET)
        ========================================== */
     @media (max-width: 900px) {
-      /* Sidebar vira gaveta */
       .sidebar {
         position: fixed; left: -260px; top: 0; height: 100vh;
         transition: left .25s ease; box-shadow: 4px 0 20px rgba(0,0,0,.15);
@@ -549,28 +548,24 @@
       .sidebar-overlay.ativo { display: block; }
       .menu-toggle { display: flex; }
       
-      /* Header ajustado */
       header { padding: 10px 14px; height: auto; min-height: 60px; gap: 10px; }
       .busca { max-width: 100%; order: 3; flex-basis: 100%; margin-bottom: 6px; }
-      .btn-novo-extintor-text { display: none; } /* Esconde texto do botão no celular */
+      .btn-novo-extintor-text { display: none; }
       
-      /* Layout principal */
       .grid-meio { grid-template-columns: 1fr; }
       .conteudo-principal { padding: 14px; gap: 16px; }
       
-      /* Tabela vira Cartões */
-      .tabela-wrap { display: none; } /* Esconde tabela no celular */
-      .cards-mobile-container { display: flex; } /* Mostra os cartões */
+      .tabela-wrap { display: none; }
+      .cards-mobile-container { display: flex; }
       .filtros { width: 100%; justify-content: flex-start; }
       .filtros button { padding: 6px 12px; font-size: 0.75rem; }
       
-      /* Modais em tela cheia */
       .modal-overlay { padding: 0; align-items: flex-end; }
       .modal {
         max-width: 100%; 
-        height: 95vh; /* Altura do celular */
+        height: 95vh;
         max-height: 100vh; 
-        border-radius: 20px 20px 0 0; /* Arredonda só o topo */
+        border-radius: 20px 20px 0 0;
         animation: slideUpMobile .3s ease;
       }
       @keyframes slideUpMobile {
@@ -581,7 +576,7 @@
       .modal-body { padding: 16px 20px; }
       .modal-footer { padding: 16px 20px; padding-bottom: 24px; }
       
-      .hist-fotos { grid-template-columns: 1fr; } /* Fotos do histórico em 1 coluna */
+      .hist-fotos { grid-template-columns: 1fr; }
     }
 
     @media (max-width: 600px) {
@@ -933,6 +928,59 @@
     <img src="" alt="Zoom da Foto" id="lightbox-img" />
   </div>
 
+  <!-- SCRIPT PARA CRIAR MANIFEST E SERVICE WORKER AUTOMATICAMENTE -->
+  <script>
+    // 1. Cria o arquivo Manifest dinamicamente
+    const manifest = {
+      name: "BRASA - Gestão de Extintores",
+      short_name: "BRASA",
+      start_url: window.location.href,
+      display: "standalone",
+      background_color: "#ffffff",
+      theme_color: "#e63946",
+      icons: [
+        {
+          src: "https://vludpyhesuyajwqmtlvs.supabase.co/storage/v1/object/public/LOGO/iconeBRASA.png",
+          sizes: "192x192",
+          type: "image/png",
+          purpose: "any maskable"
+        },
+        {
+          src: "https://vludpyhesuyajwqmtlvs.supabase.co/storage/v1/object/public/LOGO/iconeBRASA.png",
+          sizes: "512x512",
+          type: "image/png",
+          purpose: "any maskable"
+        }
+      ]
+    };
+    const stringManifest = JSON.stringify(manifest);
+    const blob = new Blob([stringManifest], {type: 'application/json'});
+    const manifestURL = URL.createObjectURL(blob);
+    document.querySelector('#manifest-link').setAttribute('href', manifestURL);
+
+    // 2. Registra o Service Worker dinamicamente (necessário para o navegador permitir a instalação)
+    if ('serviceWorker' in navigator) {
+      const swCode = `
+        self.addEventListener('install', (e) => {
+          self.skipWaiting();
+        });
+        self.addEventListener('activate', (e) => {
+          return self.clients.claim();
+        });
+        self.addEventListener('fetch', (e) => {
+          // Deixa o navegador fazer a requisição normal
+          e.respondWith(fetch(e.request).catch(() => new Response('')));
+        });
+      `;
+      const swBlob = new Blob([swCode], {type: 'application/javascript'});
+      const swURL = URL.createObjectURL(swBlob);
+      
+      navigator.serviceWorker.register(swURL).catch(err => {
+        console.log('Erro no Service Worker:', err);
+      });
+    }
+  </script>
+
   <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 
@@ -1089,7 +1137,7 @@
       renderizarGrafico();
       renderizarResumo();
       renderizarTabela();
-      renderizarCardsMobile(); // Novo
+      renderizarCardsMobile();
       renderizarCardsInspecao();
       atualizarBadgePendentes();
     }
@@ -1250,7 +1298,6 @@
         `;
       }).join('');
 
-      // Reutiliza a função de vincular eventos
       vincularEventosTabela(container);
     }
 
@@ -1344,9 +1391,7 @@
     document.getElementById('busca').addEventListener('input', (e) => {
       const q = e.target.value.toLowerCase().trim();
       
-      // Atualiza a tabela (Desktop)
       const tbody = document.getElementById('tabela-extintores');
-      // Atualiza os cards (Mobile)
       const cardsContainer = document.getElementById('cards-mobile-extintores');
 
       const filtrados = extintores.filter(ex => {
@@ -1360,7 +1405,6 @@
         return; 
       }
 
-      // Recria a lógica para buscar (tanto em tabela quanto em cards)
       if (!filtrados.length) {
         tbody.innerHTML = '<tr><td colspan="7" class="vazio">Nenhum resultado.</td></tr>';
         cardsContainer.innerHTML = '<p class="vazio">Nenhum resultado.</p>';
@@ -1709,12 +1753,10 @@
           ? '<span class="status em_dia">Conforme</span>'
           : '<span class="status vencido">Não conforme</span>';
         
-        // Formata o checklist em colunas
         const itens = i.checklist ? Object.entries(i.checklist).map(([k, v]) =>
           `<li>${v ? '✅' : '❌'} ${k.replace('_ok','').replace(/_/g,' ')}</li>`
         ).join('') : '';
 
-        // Mês de referência por extenso
         let mesRef = '';
         if (i.mes_referencia) {
           const [ano, mes] = i.mes_referencia.split('-');
@@ -1722,7 +1764,6 @@
           mesRef = `<div class="hist-mes">📅 Referência: ${nomeMes} de ${ano}</div>`;
         }
 
-        // Fotos com Lightbox
         let fotosHtml = '';
         if (i.foto_inteiro_url || i.foto_selo_url) {
           fotosHtml = `<div class="hist-fotos">
