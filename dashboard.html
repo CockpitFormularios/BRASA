@@ -185,19 +185,16 @@
     .card { background: #fff; border-radius: 12px; padding: 20px; box-shadow: var(--sombra); }
     .card h2 { font-size: 1rem; font-weight: 600; margin-bottom: 16px; }
     
-    /* Mudança do Grid para Gráfico full e dois cards embaixo */
     .grid-topo { display: grid; grid-template-columns: 1fr; gap: 24px; }
-    .grid-alertas { display: grid; grid-template-columns: 2fr 1fr; gap: 24px; }
-    
     .chart-wrap { position: relative; height: 260px; width: 100%; max-width: 400px; margin: 0 auto; }
 
     /* ---------- ALERTAS (PRÓXIMOS A VENCER) ---------- */
     .alerta-lista {
       list-style: none;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      max-height: 250px;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 12px;
+      max-height: 300px;
       overflow-y: auto;
       padding-right: 4px;
     }
@@ -237,31 +234,6 @@
     }
     .alerta-lista li span.dias.vermelho {
       background: var(--vermelho);
-    }
-
-    /* ---------- QR CODE FLUTUANTE ---------- */
-    .qr-container {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      background: #fafafa;
-      border: 1px dashed var(--cinza-borda);
-      border-radius: 12px;
-      padding: 24px;
-      text-align: center;
-      height: 100%;
-    }
-    .qr-container img {
-      width: 160px;
-      height: 160px;
-      border-radius: 8px;
-      margin-bottom: 12px;
-    }
-    .qr-container p {
-      font-size: 0.9rem;
-      color: var(--texto-suave);
-      font-weight: 600;
     }
 
     /* ---------- TABELA (DESKTOP) ---------- */
@@ -313,6 +285,8 @@
     .btn-acao.excluir:hover { background: #fee2e2; border-color: #dc2626; }
     .btn-acao.editar { color: #2563eb; border-color: #bfdbfe; }
     .btn-acao.editar:hover { background: #eff6ff; border-color: #2563eb; }
+    .btn-acao.qrcode { color: #d97706; border-color: #fde68a; }
+    .btn-acao.qrcode:hover { background: #fef3c7; border-color: #d97706; }
     .btn-acao:disabled { opacity: .4; cursor: not-allowed; }
 
     /* ---------- VISÃO EM CARDS PARA MOBILE ---------- */
@@ -332,13 +306,15 @@
     .card-mobile .top span { font-size: 0.8rem; color: var(--texto-suave); }
     .card-mobile .info { font-size: 0.85rem; color: #444; line-height: 1.4; }
     
-    .acoes-mobile { display: flex; gap: 6px; margin-top: 4px; }
+    .acoes-mobile { display: flex; gap: 6px; margin-top: 4px; flex-wrap: wrap; }
     .acoes-mobile button {
       flex: 1; padding: 10px; border-radius: 8px; border: none;
       font-weight: 600; font-size: 0.85rem; cursor: pointer;
+      min-width: 40px;
     }
-    .btn-mob-inspecionar { background: var(--vermelho); color: #fff; }
+    .btn-mob-inspecionar { background: var(--vermelho); color: #fff; flex: 1 1 100% !important; margin-bottom: 4px; }
     .btn-mob-historico { background: #e0f2fe; color: #0369a1; }
+    .btn-mob-qrcode { background: #fef3c7; color: #d97706; }
     .btn-mob-editar { background: #f3f4f6; color: #4b5563; width: 44px !important; flex: none !important; }
     .btn-mob-excluir { background: #fee2e2; color: #dc2626; width: 44px !important; flex: none !important; }
 
@@ -398,7 +374,7 @@
     .btn-inspecionar-card:disabled { opacity: .5; cursor: not-allowed; }
 
     /* ---------- AÇÕES DO CARD DE INSPEÇÃO ---------- */
-    .acoes-card { display: flex; gap: 8px; margin-top: auto; padding-top: 12px; }
+    .acoes-card { display: flex; gap: 8px; margin-top: auto; padding-top: 12px; flex-wrap: wrap; }
     .btn-card-acao {
       flex: 1; background: transparent; border: 1px solid var(--cinza-borda);
       padding: 10px; border-radius: 6px; font-size: .85rem; font-weight: 600;
@@ -410,8 +386,10 @@
     .btn-card-acao.editar:hover { background: #eff6ff; border-color: #2563eb; }
     .btn-card-acao.excluir { color: #dc2626; border-color: #fecaca; }
     .btn-card-acao.excluir:hover { background: #fee2e2; border-color: #dc2626; }
-    .btn-card-acao.historico { color: #6b7280; border-color: #e5e7eb; }
+    .btn-card-acao.historico { color: #6b7280; border-color: #e5e7eb; flex: 1 1 40%; }
     .btn-card-acao.historico:hover { background: #f3f4f6; border-color: #9ca3af; }
+    .btn-card-acao.qrcode { color: #d97706; border-color: #fde68a; flex: 1 1 40%; }
+    .btn-card-acao.qrcode:hover { background: #fef3c7; border-color: #d97706; }
 
     /* ---------- MODAL (COM SCROLL FIXO) ---------- */
     .modal-overlay {
@@ -691,6 +669,31 @@
       font-size: 1.3rem; cursor: pointer; margin-right: 4px; font-family: inherit;
     }
 
+    /* ---------- MODAL DO QR CODE ---------- */
+    .qr-modal-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 20px;
+    }
+    .qr-modal-container img {
+      width: 220px;
+      height: 220px;
+      border-radius: 12px;
+      border: 2px solid var(--cinza-borda);
+      margin-bottom: 16px;
+    }
+    .qr-modal-container p {
+      font-size: 0.95rem;
+      color: var(--texto-suave);
+      line-height: 1.5;
+    }
+    .qr-modal-container strong {
+      color: var(--vermelho);
+    }
+
     /* ==========================================
        RESPONSIVO (CELULAR E TABLET)
        ========================================== */
@@ -831,22 +834,13 @@
           </div>
         </div>
 
-        <div class="grid-alertas" style="margin-bottom: 16px;">
+        <div class="grid-alertas" style="margin-bottom: 16px; grid-template-columns: 1fr;">
           <!-- ALERTAS: PRÓXIMOS A VENCER E VENCIDOS -->
           <div class="card">
             <h2>⚠️ Alertas de Vencimento (Vencidos e Próximos 30 dias)</h2>
             <ul class="alerta-lista" id="lista-alertas">
-              <li style="justify-content: center; color: var(--texto-suave);">Carregando alertas...</li>
+              <li style="justify-content: center; color: var(--texto-suave); grid-column: 1 / -1;">Carregando alertas...</li>
             </ul>
-          </div>
-
-          <!-- QR CODE FLUTUANTE -->
-          <div class="card">
-            <div class="qr-container">
-              <h2 style="color: var(--vermelho); margin-bottom: 10px;">📱 Acesso Rápido</h2>
-              <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https://vludpyhesuyajwqmtlvs.supabase.co" alt="QR Code para Inspeção" id="qr-code-img">
-              <p>Aponte a câmera para ir à aba de Inspeção</p>
-            </div>
           </div>
         </div>
 
@@ -1135,6 +1129,22 @@
     </div>
   </div>
 
+  <!-- ============ MODAL: QR CODE DO EXTINTOR ============ -->
+  <div class="modal-overlay" id="modal-qrcode">
+    <div class="modal confirmacao">
+      <div class="modal-header" style="justify-content: center; border-bottom: none; padding-bottom: 10px;">
+        <h3 style="font-size: 1.3rem;">QR Code do Extintor</h3>
+        <button class="modal-close" data-fechar="modal-qrcode" style="position: absolute; right: 20px;">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="qr-modal-container">
+          <img id="img-qrcode-extintor" src="" alt="QR Code">
+          <p>Escaneie para abrir o<br><strong>Histórico de Inspeções</strong><br>do Extintor Nº <span id="qr-numero-extintor"></span>.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- ÁREA INVISÍVEL PARA GERAR O PDF -->
   <div id="area-impressao-pdf" style="display: none;">
     <!-- O conteúdo HTML para o PDF é injetado aqui via JS -->
@@ -1415,14 +1425,13 @@
     function renderizarAlertas() {
       const ul = document.getElementById('lista-alertas');
       
-      // Pega os vencidos E os que vencem nos próximos 30 dias
       const alertas = extintores.filter(e => {
         const dias = diffDias(e.data_validade);
         return e.status !== 'descartado' && dias <= 30;
       }).sort((a, b) => diffDias(a.data_validade) - diffDias(b.data_validade));
 
       if (alertas.length === 0) {
-        ul.innerHTML = '<li style="justify-content: center; color: var(--texto-suave);">Nenhum extintor vencido ou a vencer nos próximos 30 dias.</li>';
+        ul.innerHTML = '<li style="justify-content: center; color: var(--texto-suave); grid-column: 1 / -1;">Nenhum extintor vencido ou a vencer nos próximos 30 dias.</li>';
         return;
       }
 
@@ -1492,6 +1501,7 @@
             <div class="acoes-tabela">
               <button class="btn-acao primario" data-inspecionar="${e.id}" data-numero="${e.numero}" ${isDescartado ? 'disabled' : ''}>Inspecionar</button>
               <button class="btn-acao neutro" data-historico="${e.id}" data-numero="${e.numero}">Histórico</button>
+              <button class="btn-acao qrcode" data-qrcode="${e.id}" data-numero="${e.numero}" title="QR Code">📱 QR</button>
               <button class="btn-acao icon editar" data-editar="${e.id}" title="Editar">✏️</button>
               <button class="btn-acao icon excluir" data-excluir="${e.id}" data-numero="${e.numero}" title="Excluir">🗑️</button>
             </div>
@@ -1545,6 +1555,7 @@
             <div class="acoes-mobile">
               <button class="btn-mob-inspecionar" data-inspecionar="${e.id}" data-numero="${e.numero}" ${isDescartado ? 'disabled' : ''}>Inspecionar</button>
               <button class="btn-mob-historico" data-historico="${e.id}" data-numero="${e.numero}">Histórico</button>
+              <button class="btn-mob-qrcode" data-qrcode="${e.id}" data-numero="${e.numero}">📱 QR</button>
               <button class="btn-mob-editar" data-editar="${e.id}" title="Editar">✏️</button>
               <button class="btn-mob-excluir" data-excluir="${e.id}" data-numero="${e.numero}" title="Excluir">🗑️</button>
             </div>
@@ -1562,6 +1573,9 @@
       });
       container.querySelectorAll('[data-historico]').forEach(b => {
         b.addEventListener('click', () => abrirHistorico(b.dataset.historico, b.dataset.numero));
+      });
+      container.querySelectorAll('[data-qrcode]').forEach(b => {
+        b.addEventListener('click', () => abrirQRCode(b.dataset.qrcode, b.dataset.numero));
       });
       container.querySelectorAll('[data-editar]').forEach(b => {
         b.addEventListener('click', () => abrirEdicao(b.dataset.editar));
@@ -1622,6 +1636,7 @@
 
             <div class="acoes-card">
               <button class="btn-card-acao historico" data-historico="${e.id}" data-numero="${e.numero}">📜 Histórico</button>
+              <button class="btn-card-acao qrcode" data-qrcode="${e.id}" data-numero="${e.numero}">📱 QR Code</button>
               <button class="btn-card-acao editar" data-editar="${e.id}">✏️ Editar</button>
               <button class="btn-card-acao excluir" data-excluir="${e.id}" data-numero="${e.numero}">🗑️ Excluir</button>
             </div>
@@ -1690,6 +1705,7 @@
             <div class="acoes-tabela">
               <button class="btn-acao primario" data-inspecionar="${e.id}" data-numero="${e.numero}" ${isDescartado ? 'disabled' : ''}>Inspecionar</button>
               <button class="btn-acao neutro" data-historico="${e.id}" data-numero="${e.numero}">Histórico</button>
+              <button class="btn-acao qrcode" data-qrcode="${e.id}" data-numero="${e.numero}" title="QR Code">📱 QR</button>
               <button class="btn-acao icon editar" data-editar="${e.id}" title="Editar">✏️</button>
               <button class="btn-acao icon excluir" data-excluir="${e.id}" data-numero="${e.numero}" title="Excluir">🗑️</button>
             </div>
@@ -1727,6 +1743,7 @@
             <div class="acoes-mobile">
               <button class="btn-mob-inspecionar" data-inspecionar="${e.id}" data-numero="${e.numero}" ${isDescartado ? 'disabled' : ''}>Inspecionar</button>
               <button class="btn-mob-historico" data-historico="${e.id}" data-numero="${e.numero}">Histórico</button>
+              <button class="btn-mob-qrcode" data-qrcode="${e.id}" data-numero="${e.numero}">📱 QR</button>
               <button class="btn-mob-editar" data-editar="${e.id}" title="Editar">✏️</button>
               <button class="btn-mob-excluir" data-excluir="${e.id}" data-numero="${e.numero}" title="Excluir">🗑️</button>
             </div>
@@ -2362,14 +2379,47 @@
       window.print();
     }
 
+    // ---------- ABRIR QR CODE DO EXTINTOR ----------
+    function abrirQRCode(id, numero) {
+      document.getElementById('qr-numero-extintor').textContent = numero;
+      
+      // Gera a URL baseada na URL atual, adicionando o parâmetro ?extintor=ID
+      const urlAtual = window.location.href.split('?')[0];
+      const urlDestino = `${urlAtual}?extintor=${id}`;
+      
+      const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(urlDestino)}`;
+      
+      document.getElementById('img-qrcode-extintor').src = qrUrl;
+      abrirModal('modal-qrcode');
+    }
+
     // Função global para abrir o zoom (Lightbox)
     window.abrirZoom = function(url) {
       lightboxImg.src = url;
       lightbox.classList.add('aberto');
     }
 
+    // ---------- VERIFICA URL DE QR CODE AO CARREGAR ----------
+    function checarParametroURL() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const extintorId = urlParams.get('extintor');
+      
+      if (extintorId && extintores.length > 0) {
+        const ext = extintores.find(e => e.id === extintorId);
+        if (ext) {
+          // Remove o parâmetro da URL para não abrir sempre que atualizar
+          window.history.replaceState({}, document.title, window.location.pathname);
+          // Abre o histórico automaticamente
+          setTimeout(() => {
+            abrirHistorico(ext.id, ext.numero);
+          }, 500);
+        }
+      }
+    }
+
     // ---------- INICIAR ----------
     await carregarExtintores();
+    checarParametroURL();
   </script>
 
 </body>
