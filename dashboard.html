@@ -444,38 +444,100 @@
     }
     .preview-foto.visivel { display: inline-block; }
 
-    /* Foto no histórico */
+    /* ---------- HISTÓRICO NOVO ---------- */
+    .hist-card {
+      border: 1px solid var(--cinza-borda);
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 16px;
+      background: #fff;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+    }
+    .hist-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--cinza-borda);
+      padding-bottom: 12px;
+      margin-bottom: 12px;
+    }
+    .hist-data { font-size: 1.05rem; font-weight: 700; color: var(--escuro); }
+    .hist-mes { font-size: .85rem; color: var(--vermelho); font-weight: 600; margin-top: 2px; }
+    .hist-inspetor { font-size: .8rem; color: var(--texto-suave); margin-top: 4px; }
+    
+    .hist-lista {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 6px;
+      list-style: none;
+      margin-bottom: 16px;
+    }
+    .hist-lista li {
+      font-size: .8rem;
+      color: #444;
+      background: #f9f9f9;
+      padding: 4px 8px;
+      border-radius: 6px;
+    }
+
     .hist-fotos {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 8px;
-      margin-top: 10px;
+      gap: 12px;
     }
     .hist-fotos a {
       display: block;
       border-radius: 8px;
       overflow: hidden;
       border: 1px solid var(--cinza-borda);
+      position: relative;
+      cursor: zoom-in;
     }
     .hist-fotos img {
       width: 100%;
-      height: 100px;
+      height: 120px;
       object-fit: cover;
       display: block;
-      transition: transform .15s;
+      transition: transform .2s;
     }
     .hist-fotos a:hover img { transform: scale(1.05); }
     .hist-fotos .label-foto {
-      font-size: .68rem;
+      font-size: .75rem;
       text-align: center;
-      padding: 4px;
+      padding: 6px;
       background: var(--cinza);
       color: var(--texto-suave);
       font-weight: 600;
     }
 
-    @media (max-width: 600px) {
-      .checklist-grid { grid-template-columns: 1fr; }
+    /* ---------- MODAL DE ZOOM NA FOTO (LIGHTBOX) ---------- */
+    .lightbox {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.9);
+      display: none; align-items: center; justify-content: center;
+      z-index: 3000; cursor: zoom-out;
+    }
+    .lightbox.aberto { display: flex; }
+    .lightbox img {
+      max-width: 95%;
+      max-height: 95vh;
+      object-fit: contain;
+      border-radius: 8px;
+      box-shadow: 0 0 40px rgba(0,0,0,0.5);
+    }
+
+    /* ---------- IMPRESSÃO PARA PDF ---------- */
+    @media print {
+      body { background: #fff; }
+      header, .sidebar, .conteudo-principal, .modal-header, .modal-footer { display: none !important; }
+      .modal-overlay { position: static; display: block; background: transparent; padding: 0; }
+      .modal { max-width: 100%; max-height: none; box-shadow: none; overflow: visible; border: none; }
+      .modal form { display: block; overflow: visible; }
+      .modal-body { overflow: visible; padding: 0; }
+      
+      /* Força a impressão da cor de fundo */
+      * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+      .hist-card { page-break-inside: avoid; box-shadow: none; border-color: #ccc; }
     }
 
     /* ---------- MENSAGENS / TOAST ---------- */
@@ -534,6 +596,7 @@
     @media (max-width: 600px) {
       .form-grid { grid-template-columns: 1fr; }
       .kpi-info .valor { font-size: 1.3rem; }
+      .checklist-grid { grid-template-columns: 1fr; }
     }
   </style>
 </head>
@@ -732,16 +795,6 @@
               <input type="date" id="f-teste" required />
             </div>
 
-            <!-- Status só aparece na edição -->
-            <div class="campo full" id="campo-status" style="display:none;">
-              <label for="f-status">Status do Equipamento</label>
-              <select id="f-status">
-                <option value="ativo">Ativo (Em uso)</option>
-                <option value="manutencao">Em Manutenção</option>
-                <option value="descartado">Descartado / Inativo</option>
-              </select>
-            </div>
-
             <div class="campo full">
               <label for="f-obs">Observações</label>
               <textarea id="f-obs" placeholder="Informações adicionais..."></textarea>
@@ -842,15 +895,25 @@
 
   <!-- ============ MODAL: HISTÓRICO ============ -->
   <div class="modal-overlay" id="modal-historico">
-    <div class="modal">
+    <div class="modal" style="max-width: 800px;"> <!-- Mais largo para o histórico -->
       <div class="modal-header">
         <h3>📜 Histórico — <span id="hist-numero"></span></h3>
-        <button class="modal-close" data-fechar="modal-historico">✕</button>
+        <div style="display:flex; gap:10px; align-items:center;">
+          <button type="button" class="btn-primario" id="btn-baixar-pdf" style="background: #16a34a; border: none; padding: 8px 16px; font-size: .8rem;">
+            ⬇️ Baixar PDF
+          </button>
+          <button class="modal-close" data-fechar="modal-historico">✕</button>
+        </div>
       </div>
       <div class="modal-body" id="historico-body">
         <p class="vazio">Carregando histórico...</p>
       </div>
     </div>
+  </div>
+
+  <!-- ============ MODAL: ZOOM NA FOTO (LIGHTBOX) ============ -->
+  <div class="lightbox" id="lightbox">
+    <img src="" alt="Zoom da Foto" id="lightbox-img" />
   </div>
 
   <script type="module">
@@ -929,6 +992,19 @@
       o.addEventListener('click', (e) => { if (e.target === o) o.classList.remove('aberto'); });
     });
 
+    // ---------- LIGHTBOX (ZOOM FOTO) ----------
+    const lightbox = document.getElementById('lightbox');
+    const lightboxImg = document.getElementById('lightbox-img');
+    lightbox.addEventListener('click', () => {
+      lightbox.classList.remove('aberto');
+      setTimeout(() => { lightboxImg.src = ''; }, 300);
+    });
+
+    // ---------- BAIXAR PDF ----------
+    document.getElementById('btn-baixar-pdf').addEventListener('click', () => {
+      window.print(); // Abre a janela de impressão nativa (onde se escolhe "Salvar como PDF")
+    });
+
     // ---------- NAVEGAÇÃO POR SIDEBAR ----------
     const tabVisao = document.getElementById('tab-visao');
     const tabInspecao = document.getElementById('tab-inspecao');
@@ -951,7 +1027,6 @@
         paginaInspecao.style.display = 'block';
         renderizarCardsInspecao();
       }
-      // fecha sidebar no mobile
       if (window.innerWidth <= 900) {
         sidebar.classList.remove('aberta');
         sidebarOverlay.classList.remove('ativo');
@@ -961,18 +1036,15 @@
     tabVisao.addEventListener('click', () => mudarAba('visao'));
     tabInspecao.addEventListener('click', () => mudarAba('inspecao'));
 
-    // Botão novo extintor na sidebar
     document.getElementById('sidebar-btn-novo')?.addEventListener('click', () => {
       document.getElementById('btn-novo-extintor').click();
     });
 
-    // Toggle mobile
     menuToggle?.addEventListener('click', () => {
       sidebar.classList.toggle('aberta');
       sidebarOverlay.classList.toggle('ativo');
     });
 
-    // Fecha sidebar ao clicar fora (mobile)
     sidebarOverlay?.addEventListener('click', () => {
       sidebar.classList.remove('aberta');
       sidebarOverlay.classList.remove('ativo');
@@ -1368,15 +1440,12 @@
       document.getElementById('insp-numero').textContent = numero;
       document.getElementById('form-inspecao').reset();
 
-      // Pré-preenche o mês com o atual
       const hoje = new Date();
       const mesAtual = `${hoje.getFullYear()}-${String(hoje.getMonth()+1).padStart(2,'0')}`;
       document.getElementById('insp-mes').value = mesAtual;
 
-      // Reseta checkboxes
       document.querySelectorAll('#checklist input[type=checkbox]').forEach(c => c.checked = true);
 
-      // Reseta previews
       arquivoFotoInteiro = null;
       arquivoFotoSelo = null;
       document.getElementById('preview-inteiro').classList.remove('visivel');
@@ -1428,7 +1497,6 @@
     document.getElementById('form-inspecao').addEventListener('submit', async (e) => {
       e.preventDefault();
 
-      // Validação das fotos obrigatórias
       if (!arquivoFotoInteiro) {
         document.getElementById('upload-inteiro').classList.add('obrigatorio-faltando');
         toast('⚠️ Adicione a foto do extintor inteiro', 'erro');
@@ -1445,13 +1513,11 @@
       btn.textContent = 'Enviando fotos...';
 
       try {
-        // 1. Upload das fotos
         const [urlInteiro, urlSelo] = await Promise.all([
           uploadFoto(arquivoFotoInteiro, extintorEmInspecao),
           uploadFoto(arquivoFotoSelo, extintorEmInspecao)
         ]);
 
-        // 2. Monta checklist
         const checklist = {
           lacre_ok: document.getElementById('ck-lacre').checked,
           manometro_ok: document.getElementById('ck-manometro').checked,
@@ -1463,7 +1529,6 @@
         };
         const tudoOk = Object.values(checklist).every(v => v === true);
 
-        // 3. Insere a inspeção
         btn.textContent = 'Salvando...';
         const nova = {
           user_id: user.id,
@@ -1493,7 +1558,7 @@
       }
     });
 
-    // ---------- HISTÓRICO ----------
+    // ---------- HISTÓRICO NOVO ----------
     async function abrirHistorico(id, numero) {
       document.getElementById('hist-numero').textContent = numero;
       const body = document.getElementById('historico-body');
@@ -1516,57 +1581,75 @@
         return;
       }
 
+      const nomesMeses = [
+        "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", 
+        "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
+      ];
+
       body.innerHTML = data.map(i => {
-        const dt = new Date(i.data_inspecao).toLocaleString('pt-BR');
+        const dtObj = new Date(i.data_inspecao);
+        const dataFormatada = dtObj.toLocaleDateString('pt-BR');
+        const horaFormatada = dtObj.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+        
         const badge = i.resultado === 'conforme'
           ? '<span class="status em_dia">Conforme</span>'
           : '<span class="status vencido">Não conforme</span>';
+        
+        // Formata o checklist em colunas
         const itens = i.checklist ? Object.entries(i.checklist).map(([k, v]) =>
           `<li>${v ? '✅' : '❌'} ${k.replace('_ok','').replace(/_/g,' ')}</li>`
         ).join('') : '';
 
-        // Mês de referência formatado
+        // Mês de referência por extenso
         let mesRef = '';
         if (i.mes_referencia) {
           const [ano, mes] = i.mes_referencia.split('-');
-          const nomes = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
-          mesRef = `<div style="font-size:.8rem;color:var(--vermelho);font-weight:600;margin-bottom:4px;">
-            📅 Referência: ${nomes[parseInt(mes)-1]}/${ano}
-          </div>`;
+          const nomeMes = nomesMeses[parseInt(mes)-1];
+          mesRef = `<div class="hist-mes">📅 Referência: ${nomeMes} de ${ano}</div>`;
         }
 
-        // Fotos
+        // Fotos com Lightbox
         let fotosHtml = '';
         if (i.foto_inteiro_url || i.foto_selo_url) {
           fotosHtml = `<div class="hist-fotos">
             ${i.foto_inteiro_url ? `
-              <a href="${i.foto_inteiro_url}" target="_blank">
+              <a href="javascript:void(0)" onclick="abrirZoom('${i.foto_inteiro_url}')">
                 <img src="${i.foto_inteiro_url}" alt="Extintor inteiro" />
-                <div class="label-foto">🧯 Extintor</div>
+                <div class="label-foto">🧯 Extintor Inteiro</div>
               </a>` : ''}
             ${i.foto_selo_url ? `
-              <a href="${i.foto_selo_url}" target="_blank">
+              <a href="javascript:void(0)" onclick="abrirZoom('${i.foto_selo_url}')">
                 <img src="${i.foto_selo_url}" alt="Selo de validade" />
-                <div class="label-foto">🏷️ Selo</div>
+                <div class="label-foto">🏷️ Selo de Validade</div>
               </a>` : ''}
           </div>`;
         }
 
         return `
-          <div style="padding:14px 0;border-bottom:1px solid var(--cinza-borda);">
-            ${mesRef}
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-              <strong style="font-size:.9rem;">${dt}</strong> ${badge}
+          <div class="hist-card">
+            <div class="hist-header">
+              <div>
+                ${mesRef}
+                <div class="hist-data">Realizada em: ${dataFormatada} às ${horaFormatada}</div>
+                <div class="hist-inspetor">👤 Inspetor: ${i.inspetor || '-'}</div>
+              </div>
+              <div>${badge}</div>
             </div>
-            <div style="font-size:.8rem;color:var(--texto-suave);margin-bottom:6px;">
-              Inspetor: ${i.inspetor || '-'}
-            </div>
-            ${itens ? `<ul style="font-size:.8rem;padding-left:20px;color:#444;">${itens}</ul>` : ''}
-            ${i.observacoes ? `<p style="font-size:.8rem;margin-top:6px;color:#444;">💬 ${i.observacoes}</p>` : ''}
+            
+            <ul class="hist-lista">${itens}</ul>
+            
+            ${i.observacoes ? `<div style="font-size:.85rem; margin-bottom:12px; background:#f0f9ff; padding:10px; border-radius:8px; border-left:3px solid #0284c7;"><strong>💬 Obs:</strong> ${i.observacoes}</div>` : ''}
+            
             ${fotosHtml}
           </div>
         `;
       }).join('');
+    }
+
+    // Função global para abrir o zoom (Lightbox)
+    window.abrirZoom = function(url) {
+      lightboxImg.src = url;
+      lightbox.classList.add('aberto');
     }
 
     // ---------- INICIAR ----------
