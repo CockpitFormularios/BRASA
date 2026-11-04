@@ -539,14 +539,9 @@
     }
 
     /* ---------- IMPRESSÃO (GERADOR DE PDF) ---------- */
-    /* Esconde tudo por padrão na hora de imprimir */
     @media print {
       body * { visibility: hidden; }
-      
-      /* Mostra APENAS a área de impressão do PDF */
       #area-impressao-pdf, #area-impressao-pdf * { visibility: visible; }
-      
-      /* Posiciona a área de impressão no topo da folha */
       #area-impressao-pdf {
         position: absolute;
         left: 0;
@@ -556,8 +551,6 @@
         background: #fff;
         display: block !important;
       }
-      
-      /* Formatação dos cards dentro do PDF */
       .pdf-header {
         text-align: center;
         margin-bottom: 20px;
@@ -897,6 +890,7 @@
         <button class="modal-close" data-fechar="modal-inspecao">✕</button>
       </div>
       <form id="form-inspecao">
+        <input type="hidden" id="insp-id-existente" />
         <div class="modal-body">
 
           <!-- BLOCO 1: MÊS DE REFERÊNCIA -->
@@ -905,7 +899,7 @@
             <div class="form-grid">
               <div class="campo full">
                 <label for="insp-mes">Mês de Referência *</label>
-                <input type="month" id="insp-mes" required />
+                <input type="month" id="insp-mes" required onchange="verificarMesExistente()" />
               </div>
             </div>
           </div>
@@ -1011,7 +1005,6 @@
 
   <!-- SCRIPT PARA CRIAR MANIFEST E SERVICE WORKER AUTOMATICAMENTE -->
   <script>
-    // 1. Cria o arquivo Manifest dinamicamente com tamanho correto do ícone
     const manifest = {
       name: "BRASA - Gestão de Extintores",
       short_name: "BRASA",
@@ -1039,25 +1032,17 @@
     const manifestURL = URL.createObjectURL(blob);
     document.querySelector('#manifest-link').setAttribute('href', manifestURL);
 
-    // 2. Registra o Service Worker dinamicamente
     if ('serviceWorker' in navigator) {
       const swCode = `
-        self.addEventListener('install', (e) => {
-          self.skipWaiting();
-        });
-        self.addEventListener('activate', (e) => {
-          return self.clients.claim();
-        });
+        self.addEventListener('install', (e) => { self.skipWaiting(); });
+        self.addEventListener('activate', (e) => { return self.clients.claim(); });
         self.addEventListener('fetch', (e) => {
           e.respondWith(fetch(e.request).catch(() => new Response('')));
         });
       `;
       const swBlob = new Blob([swCode], {type: 'application/javascript'});
       const swURL = URL.createObjectURL(swBlob);
-      
-      navigator.serviceWorker.register(swURL).catch(err => {
-        console.log('Erro no Service Worker:', err);
-      });
+      navigator.serviceWorker.register(swURL).catch(err => { console.log('Erro no SW:', err); });
     }
   </script>
 
@@ -1089,9 +1074,13 @@
     let arquivoFotoInteiro = null;
     let arquivoFotoSelo = null;
     
-    // Guarda os dados do histórico para gerar o PDF
     let inspecoesAgrupadas = {}; 
     let numeroExtintorAtual = '';
+    
+    // Variáveis para controlar se está editando uma inspeção já existente no mês
+    let inspecaoIdExistente = null;
+    let urlFotoInteiroExistente = null;
+    let urlFotoSeloExistente = null;
 
     // ---------- UTILITÁRIOS ----------
     function diffDias(data) {
@@ -1671,28 +1660,120 @@
       await carregarExtintores();
     }
 
-    // ---------- INSPEÇÃO (VERSÃO NOVA COM FOTOS + MÊS) ----------
-    function abrirInspecao(id, numero) {
+    // ---------- INSPEÇÃO (VERIFICAÇÃO DE MÊS DUPLICADO) ----------
+    
+    // Função chamada ao clicar em "Fazer Inspeção"
+    async function abrirInspecao(id, numero) {
       extintorEmInspecao = id;
       document.getElementById('insp-numero').textContent = numero;
       document.getElementById('form-inspecao').reset();
 
+      // Define o mês atual como padrão
       const hoje = new Date();
       const mesAtual = `${hoje.getFullYear()}-${String(hoje.getMonth()+1).padStart(2,'0')}`;
       document.getElementById('insp-mes').value = mesAtual;
 
       document.querySelectorAll('#checklist input[type=checkbox]').forEach(c => c.checked = true);
 
+      // Limpa previews e variáveis de controle
+      inspecaoIdExistente = null;
+      urlFotoInteiroExistente = null;
+      urlFotoSeloExistente = null;
       arquivoFotoInteiro = null;
       arquivoFotoSelo = null;
+      
+      document.getElementById('insp-id-existente').value = '';
       document.getElementById('preview-inteiro').classList.remove('visivel');
       document.getElementById('preview-inteiro').src = '';
       document.getElementById('preview-selo').classList.remove('visivel');
       document.getElementById('preview-selo').src = '';
       document.getElementById('upload-inteiro').classList.remove('obrigatorio-faltando');
       document.getElementById('upload-selo').classList.remove('obrigatorio-faltando');
+      document.getElementById('btn-salvar-inspecao').textContent = 'Registrar Inspeção';
 
       abrirModal('modal-inspecao');
+      
+      // Verifica se já existe no mês atual
+      await verificarMesExistente();
+    }
+
+    // Função para checar no banco se o mês já foi inspecionado
+    window.verificarMesExistente = async function() {
+      const mesRef = document.getElementById('insp-mes').value;
+      if (!mesRef || !extintorEmInspecao) return;
+
+      // Busca no banco
+      const { data, error } = await supabase
+        .from('inspecoes')
+        .select('*')
+        .eq('extintor_id', extintorEmInspecao)
+        .eq('mes_referencia', mesRef);
+
+      if (error) {
+        console.error('Erro ao verificar mês:', error);
+        return;
+      }
+
+      if (data && data.length > 0) {
+        // Já existe! Pergunta se quer substituir.
+        const confirmar = confirm(`Já existe uma inspeção registrada para este mês (${mesRef}).\n\nDeseja substituir a inspeção anterior?\nAs fotos antigas serão apagadas.`);
+        
+        if (confirmar) {
+          const inspAntiga = data[0];
+          inspecaoIdExistente = inspAntiga.id;
+          urlFotoInteiroExistente = inspAntiga.foto_inteiro_url;
+          urlFotoSeloExistente = inspAntiga.foto_selo_url;
+          
+          document.getElementById('insp-id-existente').value = inspAntiga.id;
+          document.getElementById('btn-salvar-inspecao').textContent = 'Substituir Inspeção';
+          
+          // Preenche o formulário com os dados antigos para facilitar
+          if (inspAntiga.checklist) {
+            document.getElementById('ck-lacre').checked = inspAntiga.checklist.lacre_ok ?? true;
+            document.getElementById('ck-manometro').checked = inspAntiga.checklist.manometro_ok ?? true;
+            document.getElementById('ck-mangueira').checked = inspAntiga.checklist.mangueira_ok ?? true;
+            document.getElementById('ck-suporte').checked = inspAntiga.checklist.suporte_ok ?? true;
+            document.getElementById('ck-sinalizacao').checked = inspAntiga.checklist.sinalizacao_ok ?? true;
+            document.getElementById('ck-etiqueta').checked = inspAntiga.checklist.etiqueta_ok ?? true;
+            document.getElementById('ck-acesso').checked = inspAntiga.checklist.acesso_ok ?? true;
+          }
+          document.getElementById('f-insp-obs').value = inspAntiga.observacoes || '';
+          
+          // Mostra as fotos antigas (o usuário pode trocar)
+          if (urlFotoInteiroExistente) {
+            const img1 = document.getElementById('preview-inteiro');
+            img1.src = urlFotoInteiroExistente;
+            img1.classList.add('visivel');
+          }
+          if (urlFotoSeloExistente) {
+            const img2 = document.getElementById('preview-selo');
+            img2.src = urlFotoSeloExistente;
+            img2.classList.add('visivel');
+          }
+          
+          toast('⚠️ Você está substituindo uma inspeção existente.', 'sucesso');
+        } else {
+          // Se não quiser substituir, limpa o mês e avisa
+          document.getElementById('insp-mes').value = '';
+          inspecaoIdExistente = null;
+          urlFotoInteiroExistente = null;
+          urlFotoSeloExistente = null;
+          document.getElementById('insp-id-existente').value = '';
+          document.getElementById('btn-salvar-inspecao').textContent = 'Registrar Inspeção';
+          document.getElementById('preview-inteiro').classList.remove('visivel');
+          document.getElementById('preview-selo').classList.remove('visivel');
+          toast('Selecione outro mês para inspecionar.', 'erro');
+        }
+      } else {
+        // Não existe, pode registrar nova
+        inspecaoIdExistente = null;
+        urlFotoInteiroExistente = null;
+        urlFotoSeloExistente = null;
+        document.getElementById('insp-id-existente').value = '';
+        document.getElementById('btn-salvar-inspecao').textContent = 'Registrar Inspeção';
+        document.getElementById('preview-inteiro').classList.remove('visivel');
+        document.getElementById('preview-selo').classList.remove('visivel');
+      }
     }
 
     // Preview das fotos
@@ -1731,15 +1812,31 @@
       return pub.publicUrl;
     }
 
+    // Deletar uma foto antiga do Storage
+    async function deletarFotoAntiga(url) {
+      if (!url) return;
+      try {
+        // Extrai o caminho do arquivo da URL (ex: id/timestamp-foto.jpg)
+        const partes = url.split('/inspecoes/');
+        if (partes.length > 1) {
+          const caminho = partes[1];
+          await supabase.storage.from('inspecoes').remove([caminho]);
+        }
+      } catch (err) {
+        console.warn('Erro ao deletar foto antiga:', err);
+      }
+    }
+
     document.getElementById('form-inspecao').addEventListener('submit', async (e) => {
       e.preventDefault();
 
-      if (!arquivoFotoInteiro) {
+      // Validações: precisa ter arquivo novo OU já ter uma foto existente salva
+      if (!arquivoFotoInteiro && !urlFotoInteiroExistente) {
         document.getElementById('upload-inteiro').classList.add('obrigatorio-faltando');
         toast('⚠️ Adicione a foto do extintor inteiro', 'erro');
         return;
       }
-      if (!arquivoFotoSelo) {
+      if (!arquivoFotoSelo && !urlFotoSeloExistente) {
         document.getElementById('upload-selo').classList.add('obrigatorio-faltando');
         toast('⚠️ Adicione a foto do selo de validade', 'erro');
         return;
@@ -1750,10 +1847,23 @@
       btn.textContent = 'Enviando fotos...';
 
       try {
-        const [urlInteiro, urlSelo] = await Promise.all([
-          uploadFoto(arquivoFotoInteiro, extintorEmInspecao),
-          uploadFoto(arquivoFotoSelo, extintorEmInspecao)
-        ]);
+        let finalUrlInteiro = urlFotoInteiroExistente;
+        let finalUrlSelo = urlFotoSeloExistente;
+
+        // Se o usuário enviou uma foto NOVA, faz o upload e apaga a antiga
+        if (arquivoFotoInteiro) {
+          finalUrlInteiro = await uploadFoto(arquivoFotoInteiro, extintorEmInspecao);
+          if (urlFotoInteiroExistente) {
+            await deletarFotoAntiga(urlFotoInteiroExistente);
+          }
+        }
+        
+        if (arquivoFotoSelo) {
+          finalUrlSelo = await uploadFoto(arquivoFotoSelo, extintorEmInspecao);
+          if (urlFotoSeloExistente) {
+            await deletarFotoAntiga(urlFotoSeloExistente);
+          }
+        }
 
         const checklist = {
           lacre_ok: document.getElementById('ck-lacre').checked,
@@ -1767,7 +1877,8 @@
         const tudoOk = Object.values(checklist).every(v => v === true);
 
         btn.textContent = 'Salvando...';
-        const nova = {
+        
+        const novaInspecao = {
           user_id: user.id,
           extintor_id: extintorEmInspecao,
           inspetor: user.email,
@@ -1775,11 +1886,25 @@
           resultado: tudoOk ? 'conforme' : 'nao_conforme',
           observacoes: document.getElementById('f-insp-obs').value.trim() || null,
           mes_referencia: document.getElementById('insp-mes').value || null,
-          foto_inteiro_url: urlInteiro,
-          foto_selo_url: urlSelo
+          foto_inteiro_url: finalUrlInteiro,
+          foto_selo_url: finalUrlSelo
         };
 
-        const { error } = await supabase.from('inspecoes').insert(nova);
+        let error;
+
+        if (inspecaoIdExistente) {
+          // Atualiza a inspeção existente (economiza espaço)
+          const { error: err } = await supabase
+            .from('inspecoes')
+            .update(novaInspecao)
+            .eq('id', inspecaoIdExistente);
+          error = err;
+        } else {
+          // Insere nova inspeção
+          const { error: err } = await supabase.from('inspecoes').insert(novaInspecao);
+          error = err;
+        }
+
         if (error) throw error;
 
         toast(tudoOk ? '✅ Inspeção registrada (conforme)' : '⚠️ Inspeção registrada com não conformidades');
@@ -1791,11 +1916,11 @@
         toast('Erro: ' + (err.message || 'Falha no envio'), 'erro');
       } finally {
         btn.disabled = false;
-        btn.textContent = 'Registrar Inspeção';
+        btn.textContent = inspecaoIdExistente ? 'Substituir Inspeção' : 'Registrar Inspeção';
       }
     });
 
-    // ---------- HISTÓRICO (NOVO: AGRUPADO POR MÊS) ----------
+    // ---------- HISTÓRICO (AGRUPADO POR MÊS) ----------
     async function abrirHistorico(id, numero) {
       document.getElementById('hist-numero').textContent = numero;
       numeroExtintorAtual = numero;
@@ -1808,7 +1933,7 @@
         .from('inspecoes')
         .select('*')
         .eq('extintor_id', id)
-        .order('mes_referencia', { ascending: false }); // Ordena pelo mês mais recente
+        .order('mes_referencia', { ascending: false });
 
       if (error) {
         body.innerHTML = '<p class="vazio">Erro ao carregar histórico.</p>';
@@ -1825,13 +1950,11 @@
         "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
       ];
 
-      // Agrupa as inspeções pela string do mês_referencia (Ex: "2026-11")
       inspecoesAgrupadas = {};
       
       data.forEach(insp => {
         let ref = insp.mes_referencia;
         if (!ref) {
-          // Fallback caso a inspeção seja antiga e não tenha mês_referencia
           const dt = new Date(insp.data_inspecao);
           ref = `${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}`;
         }
@@ -1842,7 +1965,6 @@
         inspecoesAgrupadas[ref].push(insp);
       });
 
-      // Constrói a lista de meses
       let htmlMeses = '<div class="hist-meses-container">';
       
       Object.keys(inspecoesAgrupadas).forEach(ref => {
@@ -1953,7 +2075,6 @@
       const [ano, mes] = ref.split('-');
       const nomeMes = nomesMeses[parseInt(mes)-1];
 
-      // Cria o HTML para o PDF
       let htmlPdf = `
         <div class="pdf-header">
           <img src="https://vludpyhesuyajwqmtlvs.supabase.co/storage/v1/object/public/LOGO/iconeBRASA.png" alt="BRASA">
@@ -2010,7 +2131,6 @@
         `;
       }).join('');
 
-      // Insere na área invisível e chama a impressão
       document.getElementById('area-impressao-pdf').innerHTML = htmlPdf;
       window.print();
     }
