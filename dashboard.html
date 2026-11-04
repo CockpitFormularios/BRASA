@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>BRASA</title>
+  <title>BRASA — Dashboard</title>
   
   <!-- CONFIGURAÇÃO PWA -->
   <meta name="theme-color" content="#e63946" />
@@ -543,16 +543,50 @@
 
     /* ---------- IMPRESSÃO (GERADOR DE PDF) ---------- */
     @media print {
+      @page { size: A4 portrait; margin: 10mm; }
       body * { visibility: hidden; }
       #area-impressao-pdf, #area-impressao-pdf * { visibility: visible; }
       #area-impressao-pdf {
         position: absolute; left: 0; top: 0; width: 100%;
-        padding: 20px; background: #fff; display: block !important;
+        display: block !important;
       }
-      .pdf-header { text-align: center; margin-bottom: 20px; border-bottom: 2px solid var(--vermelho); padding-bottom: 10px; }
-      .pdf-header img { height: 40px; }
-      .pdf-header h1 { font-size: 1.5rem; color: var(--vermelho); margin-top: 10px; }
-      .hist-detalhe-card { page-break-inside: avoid; border: 1px solid #ccc !important; margin-bottom: 20px; }
+      .pdf-header { 
+        text-align: center; margin-bottom: 15px; 
+        border-bottom: 2px solid var(--vermelho); padding-bottom: 10px; 
+      }
+      .pdf-header img { height: 35px; }
+      .pdf-header h1 { font-size: 1.2rem; color: var(--vermelho); margin-top: 8px; }
+      .pdf-header p { font-size: 0.9rem; margin-top: 4px; }
+      
+      .hist-detalhe-card { 
+        page-break-inside: avoid; 
+        border: 1px solid #ccc !important; 
+        margin-bottom: 0; padding: 10px;
+      }
+      .hist-header { padding-bottom: 8px; margin-bottom: 8px; }
+      .hist-data { font-size: 0.95rem; }
+      
+      .hist-lista { 
+        grid-template-columns: 1fr 1fr 1fr; 
+        gap: 4px; margin-bottom: 10px; 
+      }
+      .hist-lista li { font-size: 0.75rem; padding: 2px 6px; }
+      
+      /* AQUI ESTÁ O SEGREDO PARA AS FOTOS CABEREM NA PÁGINA */
+      .hist-fotos { 
+        display: flex; gap: 10px; justify-content: space-between; 
+      }
+      .hist-fotos > div { 
+        flex: 1; max-width: 48%; 
+      }
+      .hist-fotos img { 
+        width: 100%; 
+        height: 160px; /* Tamanho fixo e reduzido para caber em 1 página */
+        object-fit: cover; /* Preenche o espaço sem distorcer */
+        border-radius: 6px; 
+      }
+      .hist-fotos .label-foto { padding: 4px; font-size: 0.7rem; }
+      
       * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
     }
 
@@ -1717,10 +1751,8 @@
       }
 
       if (data && data.length > 0) {
-        // Já existe! Abre o modal bonito de confirmação
         abrirModal('modal-confirmar-substituicao');
         
-        // Configura os botões do modal de confirmação
         document.getElementById('btn-cancelar-substituicao').onclick = () => {
           fecharModal('modal-confirmar-substituicao');
           document.getElementById('insp-mes').value = '';
@@ -2074,7 +2106,6 @@
         return;
       }
 
-      // Pega a inspeção para deletar as fotos do storage
       const insp = inspecoesAgrupadas[ref].find(i => i.id === id);
       
       if (insp) {
@@ -2092,7 +2123,6 @@
       toast('🗑️ Inspeção excluída com sucesso!');
       fecharModal('modal-detalhe-historico');
       
-      // Atualiza a tela de histórico (se ainda estiver aberta)
       if (document.getElementById('modal-historico').classList.contains('aberto')) {
         const numero = document.getElementById('hist-numero').textContent;
         abrirHistorico(extintorEmInspecao, numero);
@@ -2137,12 +2167,12 @@
           fotosHtml = `<div class="hist-fotos">
             ${i.foto_inteiro_url ? `
               <div>
-                <img src="${i.foto_inteiro_url}" alt="Extintor inteiro" style="width:100%; height:auto; border-radius:8px;" />
+                <img src="${i.foto_inteiro_url}" alt="Extintor inteiro" />
                 <div class="label-foto">🧯 Extintor Inteiro</div>
               </div>` : ''}
             ${i.foto_selo_url ? `
               <div>
-                <img src="${i.foto_selo_url}" alt="Selo de validade" style="width:100%; height:auto; border-radius:8px;" />
+                <img src="${i.foto_selo_url}" alt="Selo de validade" />
                 <div class="label-foto">🏷️ Selo de Validade</div>
               </div>` : ''}
           </div>`;
