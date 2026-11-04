@@ -596,49 +596,29 @@
       border-radius: 8px; box-shadow: 0 0 40px rgba(0,0,0,0.5);
     }
 
-    /* ---------- IMPRESSÃO (GERADOR DE PDF) ---------- */
+    /* ---------- IMPRESSÃO GERAL ---------- */
     @media print {
-      @page { size: A4 portrait; margin: 10mm; }
       body * { visibility: hidden; }
+      
       #area-impressao-pdf, #area-impressao-pdf * { visibility: visible; }
       #area-impressao-pdf {
         position: absolute; left: 0; top: 0; width: 100%;
         display: block !important;
       }
-      .pdf-header { 
-        text-align: center; margin-bottom: 15px; 
-        border-bottom: 2px solid var(--vermelho); padding-bottom: 10px; 
-      }
+      
+      .pdf-header { text-align: center; margin-bottom: 15px; border-bottom: 2px solid var(--vermelho); padding-bottom: 10px; }
       .pdf-header img { height: 35px; }
       .pdf-header h1 { font-size: 1.2rem; color: var(--vermelho); margin-top: 8px; }
       .pdf-header p { font-size: 0.9rem; margin-top: 4px; }
       
-      .hist-detalhe-card { 
-        page-break-inside: avoid; 
-        border: 1px solid #ccc !important; 
-        margin-bottom: 0; padding: 10px;
-      }
+      .hist-detalhe-card { page-break-inside: avoid; border: 1px solid #ccc !important; margin-bottom: 0; padding: 10px; }
       .hist-header { padding-bottom: 8px; margin-bottom: 8px; }
       .hist-data { font-size: 0.95rem; }
-      
-      .hist-lista { 
-        grid-template-columns: 1fr 1fr 1fr; 
-        gap: 4px; margin-bottom: 10px; 
-      }
+      .hist-lista { grid-template-columns: 1fr 1fr 1fr; gap: 4px; margin-bottom: 10px; }
       .hist-lista li { font-size: 0.75rem; padding: 2px 6px; }
-      
-      .hist-fotos { 
-        display: flex; gap: 10px; justify-content: space-between; 
-      }
-      .hist-fotos > div { 
-        flex: 1; max-width: 48%; 
-      }
-      .hist-fotos img { 
-        width: 100%; 
-        height: 160px;
-        object-fit: cover; 
-        border-radius: 6px; 
-      }
+      .hist-fotos { display: flex; gap: 10px; justify-content: space-between; }
+      .hist-fotos > div { flex: 1; max-width: 48%; }
+      .hist-fotos img { width: 100%; height: 160px; object-fit: cover; border-radius: 6px; }
       .hist-fotos .label-foto { padding: 4px; font-size: 0.7rem; }
       
       * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
@@ -677,22 +657,58 @@
       justify-content: center;
       text-align: center;
       padding: 20px;
-    }
-    .qr-modal-container img {
-      width: 220px;
-      height: 220px;
+      border: 1px solid var(--cinza-borda);
       border-radius: 12px;
-      border: 2px solid var(--cinza-borda);
-      margin-bottom: 16px;
+    }
+    .qr-modal-container img.qr-img {
+      width: 200px;
+      height: 200px;
+      margin: 10px 0 15px 0;
+    }
+    .qr-modal-container .logo-empresa {
+      height: 40px;
+      object-fit: contain;
+      margin-bottom: 10px;
     }
     .qr-modal-container p {
-      font-size: 0.95rem;
+      font-size: 0.9rem;
       color: var(--texto-suave);
       line-height: 1.5;
     }
-    .qr-modal-container strong {
+    .qr-modal-container p strong {
       color: var(--vermelho);
+      font-size: 1rem;
     }
+
+    /* ---------- IMPRESSÃO EM LOTE DE QR CODES ---------- */
+    .qr-print-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 15px;
+    }
+    .qr-print-card {
+      border: 1.5px dashed #999;
+      padding: 15px;
+      text-align: center;
+      border-radius: 8px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      page-break-inside: avoid;
+    }
+    .qr-print-card .logo {
+      height: 30px;
+      margin-bottom: 10px;
+      object-fit: contain;
+    }
+    .qr-print-card h4 { font-size: 1.1rem; margin-bottom: 2px; }
+    .qr-print-card h5 { font-size: 0.8rem; color: #555; font-weight: normal; margin-bottom: 8px; }
+    .qr-print-card img.qr {
+      width: 140px;
+      height: 140px;
+      margin-bottom: 8px;
+    }
+    .qr-print-card p { font-size: 0.7rem; font-weight: bold; color: var(--vermelho); text-transform: uppercase; }
 
     /* ==========================================
        RESPONSIVO (CELULAR E TABLET)
@@ -794,7 +810,12 @@
         <span class="sidebar-badge" id="badge-pendentes" style="display:none;">0</span>
       </button>
 
-      <div class="sidebar-titulo" style="margin-top:16px;">Atalhos</div>
+      <div class="sidebar-titulo" style="margin-top:16px;">Sistema</div>
+
+      <button class="sidebar-btn" id="tab-config">
+        <span class="icone">⚙️</span>
+        <span>Configurações</span>
+      </button>
 
       <button class="sidebar-btn" id="sidebar-btn-novo">
         <span class="icone">➕</span>
@@ -827,7 +848,6 @@
         </div>
 
         <div class="grid-topo" style="margin-bottom: 16px;">
-          <!-- Gráfico Ocupando a linha toda -->
           <div class="card">
             <h2 style="text-align: center;">📊 Semáforo de Vencimentos</h2>
             <div class="chart-wrap"><canvas id="grafico"></canvas></div>
@@ -835,7 +855,6 @@
         </div>
 
         <div class="grid-alertas" style="margin-bottom: 16px; grid-template-columns: 1fr;">
-          <!-- ALERTAS: PRÓXIMOS A VENCER E VENCIDOS -->
           <div class="card">
             <h2>⚠️ Alertas de Vencimento (Vencidos e Próximos 30 dias)</h2>
             <ul class="alerta-lista" id="lista-alertas">
@@ -847,16 +866,18 @@
         <section class="card">
           <div class="card-header">
             <h2>🧯 Extintores Cadastrados</h2>
-            <div class="filtros" id="filtros">
-              <button class="ativo" data-filtro="todos">Todos</button>
-              <button data-filtro="vencido">Vencidos</button>
-              <button data-filtro="critico">Críticos</button>
-              <button data-filtro="atencao">Atenção</button>
-              <button data-filtro="em_dia">Em dia</button>
+            <div style="display:flex; gap: 8px; flex-wrap: wrap;">
+              <button class="btn-secundario" onclick="prepararImpressaoQR()" style="padding: 8px 14px; font-size: 0.85rem;">🖨️ Imprimir QR Codes</button>
+              <div class="filtros" id="filtros">
+                <button class="ativo" data-filtro="todos">Todos</button>
+                <button data-filtro="vencido">Vencidos</button>
+                <button data-filtro="critico">Críticos</button>
+                <button data-filtro="atencao">Atenção</button>
+                <button data-filtro="em_dia">Em dia</button>
+              </div>
             </div>
           </div>
           
-          <!-- Tabela Desktop -->
           <div class="tabela-wrap">
             <table>
               <thead>
@@ -871,10 +892,7 @@
             </table>
           </div>
           
-          <!-- Cards Mobile (Aparece só no celular) -->
-          <div class="cards-mobile-container" id="cards-mobile-extintores">
-            <!-- Gerado via JS -->
-          </div>
+          <div class="cards-mobile-container" id="cards-mobile-extintores"></div>
         </section>
       </section>
 
@@ -885,9 +903,28 @@
             <h2>🔍 Pronto para Inspecionar</h2>
             <input type="text" id="busca-inspecao" class="busca" style="max-width: 300px;" placeholder="Filtrar por nº ou local..." />
           </div>
-          <div class="grid-inspecao" id="grid-inspecao">
-            <!-- Cards gerados via JS -->
+          <div class="grid-inspecao" id="grid-inspecao"></div>
+        </div>
+      </section>
+
+      <!-- PÁGINA 3: CONFIGURAÇÕES -->
+      <section id="pagina-config" style="display: none;">
+        <div class="card">
+          <h2>⚙️ Configurações do Sistema</h2>
+          <p style="font-size: 0.9rem; color: var(--texto-suave); margin-bottom: 20px;">
+            Personalize a identidade visual e o comportamento do sistema.
+          </p>
+          
+          <div class="form-secao">
+            <div class="form-secao-titulo">🖼️ Logo da Empresa (Para impressão de QR Codes)</div>
+            <div class="campo full">
+              <label for="config-logo-url">URL da Imagem da Logo</label>
+              <input type="url" id="config-logo-url" placeholder="https://exemplo.com/sua-logo.png" />
+              <small style="display:block; margin-top:6px; color:var(--texto-suave);">Cole o link direto de uma imagem (PNG, JPG) que esteja hospedada na internet. Ela aparecerá acima do QR Code ao imprimir.</small>
+            </div>
+            <button type="button" class="btn-primario" onclick="salvarConfiguracoes()" style="margin-top: 14px;">Salvar Logo</button>
           </div>
+
         </div>
       </section>
 
@@ -959,7 +996,6 @@
               <input type="date" id="f-teste" required />
             </div>
 
-            <!-- Status só aparece na edição -->
             <div class="campo full" id="campo-status" style="display:none;">
               <label for="f-status">Status do Equipamento</label>
               <select id="f-status">
@@ -994,7 +1030,6 @@
         <input type="hidden" id="insp-id-existente" />
         <div class="modal-body">
 
-          <!-- BLOCO 1: MÊS DE REFERÊNCIA -->
           <div class="form-secao">
             <div class="form-secao-titulo">📅 Referência da Inspeção</div>
             <div class="form-grid">
@@ -1005,7 +1040,6 @@
             </div>
           </div>
 
-          <!-- BLOCO 2: CHECKLIST -->
           <div class="form-secao">
             <div class="form-secao-titulo">✅ Checklist de Conformidade</div>
             <p style="font-size:.8rem;color:var(--texto-suave);margin-bottom:12px;">
@@ -1022,11 +1056,9 @@
             </div>
           </div>
 
-          <!-- BLOCO 3: FOTOS OBRIGATÓRIAS -->
           <div class="form-secao">
             <div class="form-secao-titulo">📸 Fotos Obrigatórias</div>
             <div class="form-grid">
-
               <div class="campo">
                 <label>Foto do Extintor Inteiro *</label>
                 <div class="upload-area" id="upload-inteiro">
@@ -1046,11 +1078,9 @@
                   <img class="preview-foto" id="preview-selo" alt="Preview" />
                 </div>
               </div>
-
             </div>
           </div>
 
-          <!-- BLOCO 4: OBSERVAÇÕES -->
           <div class="form-secao">
             <div class="form-secao-titulo">💬 Observações</div>
             <div class="campo full">
@@ -1088,9 +1118,7 @@
         <h3>📅 Inspeção — <span id="detalhe-mes-titulo"></span></h3>
         <button class="modal-close" data-fechar="modal-detalhe-historico">✕</button>
       </div>
-      <div class="modal-body" id="detalhe-historico-body">
-        <!-- Conteúdo inserido via JS -->
-      </div>
+      <div class="modal-body" id="detalhe-historico-body"></div>
     </div>
   </div>
 
@@ -1131,24 +1159,34 @@
 
   <!-- ============ MODAL: QR CODE DO EXTINTOR ============ -->
   <div class="modal-overlay" id="modal-qrcode">
-    <div class="modal confirmacao">
+    <div class="modal confirmacao" style="max-width: 360px;">
       <div class="modal-header" style="justify-content: center; border-bottom: none; padding-bottom: 10px;">
-        <h3 style="font-size: 1.3rem;">QR Code do Extintor</h3>
-        <button class="modal-close" data-fechar="modal-qrcode" style="position: absolute; right: 20px;">✕</button>
+        <h3 style="font-size: 1.1rem;">Etiqueta de Identificação</h3>
+        <button class="modal-close" data-fechar="modal-qrcode" style="position: absolute; right: 15px;">✕</button>
       </div>
       <div class="modal-body">
         <div class="qr-modal-container">
-          <img id="img-qrcode-extintor" src="" alt="QR Code">
-          <p>Escaneie para abrir o<br><strong>Histórico de Inspeções</strong><br>do Extintor Nº <span id="qr-numero-extintor"></span>.</p>
+          <img id="img-logo-qr-modal" class="logo-empresa" src="" style="display:none;" alt="Logo">
+          
+          <h4 style="font-size: 0.9rem; color: #555;">EXTINTOR:</h4>
+          <h3 id="qr-tipo-extintor" style="font-size: 1.4rem; margin-bottom: 10px;">---</h3>
+          
+          <h4 style="font-size: 0.9rem; color: #555;">NÚMERO:</h4>
+          <h3 id="qr-numero-extintor" style="font-size: 1.8rem; color: var(--vermelho);">---</h3>
+          
+          <img id="img-qrcode-extintor" class="qr-img" src="" alt="QR Code">
+          
+          <p>LEIA O QRCODE PARA<br>VERIFICAR A INSPEÇÃO MENSAL</p>
         </div>
+      </div>
+      <div class="modal-footer" style="justify-content: center; border-top: none; padding-top: 0;">
+        <button type="button" class="btn-primario" onclick="imprimirQrIndividual()" style="flex: 1; background: #d97706;">🖨️ Imprimir / Salvar</button>
       </div>
     </div>
   </div>
 
-  <!-- ÁREA INVISÍVEL PARA GERAR O PDF -->
-  <div id="area-impressao-pdf" style="display: none;">
-    <!-- O conteúdo HTML para o PDF é injetado aqui via JS -->
-  </div>
+  <!-- ÁREA INVISÍVEL PARA GERAR O PDF / IMPRESSÃO -->
+  <div id="area-impressao-pdf" style="display: none;"></div>
 
   <!-- ============ MODAL: ZOOM NA FOTO (LIGHTBOX) ============ -->
   <div class="lightbox" id="lightbox">
@@ -1238,6 +1276,18 @@
     let idInspecaoParaExcluir = null;
     let refMesParaExcluir = null;
 
+    // ---------- CONFIGURAÇÕES (LOCAL STORAGE) ----------
+    let configLogoUrl = localStorage.getItem('brasa_logo_url') || '';
+
+    document.getElementById('config-logo-url').value = configLogoUrl;
+
+    window.salvarConfiguracoes = function() {
+      const url = document.getElementById('config-logo-url').value.trim();
+      configLogoUrl = url;
+      localStorage.setItem('brasa_logo_url', url);
+      toast('✅ Configurações salvas com sucesso!');
+    };
+
     // ---------- UTILITÁRIOS ----------
     function diffDias(data) {
       const [y, m, d] = data.split('-').map(Number);
@@ -1297,25 +1347,37 @@
     // ---------- NAVEGAÇÃO POR SIDEBAR ----------
     const tabVisao = document.getElementById('tab-visao');
     const tabInspecao = document.getElementById('tab-inspecao');
+    const tabConfig = document.getElementById('tab-config');
+    
     const paginaVisao = document.getElementById('pagina-visao');
     const paginaInspecao = document.getElementById('pagina-inspecao');
+    const paginaConfig = document.getElementById('pagina-config');
+    
     const sidebar = document.getElementById('sidebar');
     const menuToggle = document.getElementById('menu-toggle');
     const sidebarOverlay = document.getElementById('sidebar-overlay');
 
     function mudarAba(aba) {
+      tabVisao.classList.remove('ativo');
+      tabInspecao.classList.remove('ativo');
+      tabConfig.classList.remove('ativo');
+      
+      paginaVisao.style.display = 'none';
+      paginaInspecao.style.display = 'none';
+      paginaConfig.style.display = 'none';
+
       if (aba === 'visao') {
         tabVisao.classList.add('ativo');
-        tabInspecao.classList.remove('ativo');
         paginaVisao.style.display = 'block';
-        paginaInspecao.style.display = 'none';
-      } else {
+      } else if (aba === 'inspecao') {
         tabInspecao.classList.add('ativo');
-        tabVisao.classList.remove('ativo');
-        paginaVisao.style.display = 'none';
         paginaInspecao.style.display = 'block';
         renderizarCardsInspecao();
+      } else if (aba === 'config') {
+        tabConfig.classList.add('ativo');
+        paginaConfig.style.display = 'block';
       }
+
       if (window.innerWidth <= 900) {
         sidebar.classList.remove('aberta');
         sidebarOverlay.classList.remove('ativo');
@@ -1324,6 +1386,7 @@
 
     tabVisao.addEventListener('click', () => mudarAba('visao'));
     tabInspecao.addEventListener('click', () => mudarAba('inspecao'));
+    tabConfig.addEventListener('click', () => mudarAba('config'));
 
     document.getElementById('sidebar-btn-novo')?.addEventListener('click', () => {
       document.getElementById('btn-novo-extintor').click();
@@ -2307,7 +2370,7 @@
       refMesParaExcluir = null;
     };
 
-    // ---------- GERAR PDF DO MÊS ----------
+    // ---------- GERAR PDF DO MÊS (INSPEÇÃO) ----------
     window.gerarPDFMes = function(ref) {
       const inspecoes = inspecoesAgrupadas[ref];
       if (!inspecoes) return;
@@ -2379,18 +2442,90 @@
       window.print();
     }
 
-    // ---------- ABRIR QR CODE DO EXTINTOR ----------
+    // ---------- GERAR / IMPRIMIR QR CODES ----------
+    let htmlQrIndividualParaImprimir = '';
+
     function abrirQRCode(id, numero) {
-      document.getElementById('qr-numero-extintor').textContent = numero;
-      
-      // Gera a URL baseada na URL atual, adicionando o parâmetro ?extintor=ID
+      const ext = extintores.find(e => e.id === id);
+      if(!ext) return;
+
       const urlAtual = window.location.href.split('?')[0];
       const urlDestino = `${urlAtual}?extintor=${id}`;
-      
       const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(urlDestino)}`;
       
+      // Configura o modal visual
+      document.getElementById('qr-numero-extintor').textContent = numero;
+      document.getElementById('qr-tipo-extintor').textContent = ext.tipo;
       document.getElementById('img-qrcode-extintor').src = qrUrl;
+      
+      const imgLogo = document.getElementById('img-logo-qr-modal');
+      if (configLogoUrl) {
+        imgLogo.src = configLogoUrl;
+        imgLogo.style.display = 'block';
+      } else {
+        imgLogo.style.display = 'none';
+      }
+
+      // Prepara o HTML caso o usuário clique em "Imprimir" dentro do modal
+      htmlQrIndividualParaImprimir = `
+        <div style="display: flex; justify-content: center; align-items: center; height: 100vh; background: #fff;">
+          <div class="qr-print-card" style="width: 300px;">
+            ${configLogoUrl ? `<img src="${configLogoUrl}" class="logo" alt="Logo">` : ''}
+            <h4>EXTINTOR: ${ext.tipo}</h4>
+            <h5>NÚMERO: ${numero}</h5>
+            <img src="${qrUrl}" class="qr" alt="QR Code">
+            <p>LEIA O QRCODE PARA<br>VERIFICAR A INSPEÇÃO MENSAL</p>
+          </div>
+        </div>
+      `;
+
       abrirModal('modal-qrcode');
+    }
+
+    window.imprimirQrIndividual = function() {
+      document.getElementById('area-impressao-pdf').innerHTML = htmlQrIndividualParaImprimir;
+      window.print();
+    }
+
+    // Imprime todos os QRs
+    window.prepararImpressaoQR = function() {
+      if (!extintores.length) {
+        toast('Nenhum extintor cadastrado para imprimir.', 'erro');
+        return;
+      }
+
+      const urlAtual = window.location.href.split('?')[0];
+      
+      let htmlLote = `
+        <div style="background:#fff; padding: 10px;">
+          <h2 style="text-align: center; margin-bottom: 20px;">Etiquetas de Identificação</h2>
+          <div class="qr-print-grid">
+      `;
+      
+      extintores.forEach(ext => {
+        if (ext.status === 'descartado') return; // Pula inativos
+        
+        const urlDestino = `${urlAtual}?extintor=${ext.id}`;
+        const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(urlDestino)}`;
+
+        htmlLote += `
+          <div class="qr-print-card">
+            ${configLogoUrl ? `<img src="${configLogoUrl}" class="logo" alt="Logo">` : ''}
+            <h4>EXTINTOR: ${ext.tipo}</h4>
+            <h5>NÚMERO: ${ext.numero}</h5>
+            <img src="${qrUrl}" class="qr" alt="QR Code">
+            <p>LEIA O QRCODE PARA<br>VERIFICAR A INSPEÇÃO MENSAL</p>
+          </div>
+        `;
+      });
+
+      htmlLote += `
+          </div>
+        </div>
+      `;
+
+      document.getElementById('area-impressao-pdf').innerHTML = htmlLote;
+      window.print();
     }
 
     // Função global para abrir o zoom (Lightbox)
