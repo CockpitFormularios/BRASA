@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>BRASA — Dashboard</title>
   
-  <!-- CONFIGURAÇÃO PWA PARA INSTALAR NO CELULAR -->
+  <!-- CONFIGURAÇÃO PWA -->
   <meta name="theme-color" content="#e63946" />
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -333,6 +333,8 @@
     .btn-card-acao.editar:hover { background: #eff6ff; border-color: #2563eb; }
     .btn-card-acao.excluir { color: #dc2626; border-color: #fecaca; }
     .btn-card-acao.excluir:hover { background: #fee2e2; border-color: #dc2626; }
+    .btn-card-acao.historico { color: #6b7280; border-color: #e5e7eb; }
+    .btn-card-acao.historico:hover { background: #f3f4f6; border-color: #9ca3af; }
 
     /* ---------- MODAL (COM SCROLL FIXO) ---------- */
     .modal-overlay {
@@ -353,6 +355,7 @@
       overflow: hidden;
     }
     .modal.historico { max-width: 800px; }
+    .modal.confirmacao { max-width: 400px; text-align: center; }
     
     @keyframes slideUp {
       from { transform: translateY(20px); opacity: 0; }
@@ -543,28 +546,13 @@
       body * { visibility: hidden; }
       #area-impressao-pdf, #area-impressao-pdf * { visibility: visible; }
       #area-impressao-pdf {
-        position: absolute;
-        left: 0;
-        top: 0;
-        width: 100%;
-        padding: 20px;
-        background: #fff;
-        display: block !important;
+        position: absolute; left: 0; top: 0; width: 100%;
+        padding: 20px; background: #fff; display: block !important;
       }
-      .pdf-header {
-        text-align: center;
-        margin-bottom: 20px;
-        border-bottom: 2px solid var(--vermelho);
-        padding-bottom: 10px;
-      }
+      .pdf-header { text-align: center; margin-bottom: 20px; border-bottom: 2px solid var(--vermelho); padding-bottom: 10px; }
       .pdf-header img { height: 40px; }
       .pdf-header h1 { font-size: 1.5rem; color: var(--vermelho); margin-top: 10px; }
-      
-      .hist-detalhe-card {
-        page-break-inside: avoid;
-        border: 1px solid #ccc !important;
-        margin-bottom: 20px;
-      }
+      .hist-detalhe-card { page-break-inside: avoid; border: 1px solid #ccc !important; margin-bottom: 20px; }
       * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
     }
 
@@ -626,6 +614,7 @@
         border-radius: 20px 20px 0 0;
         animation: slideUpMobile .3s ease;
       }
+      .modal.confirmacao { height: auto; border-radius: 20px; margin: 20px; width: calc(100% - 40px); align-items: center;}
       @keyframes slideUpMobile {
         from { transform: translateY(100%); }
         to { transform: translateY(0); }
@@ -993,6 +982,24 @@
     </div>
   </div>
 
+  <!-- ============ MODAL: CONFIRMAÇÃO DE SUBSTITUIÇÃO ============ -->
+  <div class="modal-overlay" id="modal-confirmar-substituicao">
+    <div class="modal confirmacao">
+      <div class="modal-header" style="justify-content: center; border-bottom: none; padding-bottom: 10px;">
+        <h3 style="font-size: 1.3rem;">⚠️ Atenção</h3>
+      </div>
+      <div class="modal-body" style="text-align: center; font-size: 0.95rem;">
+        <p style="margin-bottom: 12px;">Já existe uma inspeção registrada para este mês.</p>
+        <p style="font-weight: 600; color: var(--vermelho); margin-bottom: 12px;">Deseja substituir a inspeção anterior?</p>
+        <p style="font-size: 0.85rem; color: var(--texto-suave);">As fotos antigas serão apagadas permanentemente.</p>
+      </div>
+      <div class="modal-footer" style="justify-content: center; border-top: none; padding-top: 0;">
+        <button type="button" class="btn-secundario" id="btn-cancelar-substituicao" style="flex: 1;">Cancelar</button>
+        <button type="button" class="btn-primario" id="btn-confirmar-substituicao" style="flex: 1; background: var(--vermelho);">Substituir</button>
+      </div>
+    </div>
+  </div>
+
   <!-- ÁREA INVISÍVEL PARA GERAR O PDF -->
   <div id="area-impressao-pdf" style="display: none;">
     <!-- O conteúdo HTML para o PDF é injetado aqui via JS -->
@@ -1003,7 +1010,7 @@
     <img src="" alt="Zoom da Foto" id="lightbox-img" />
   </div>
 
-  <!-- SCRIPT PARA CRIAR MANIFEST E SERVICE WORKER AUTOMATICAMENTE -->
+  <!-- SCRIPT PARA CRIAR MANIFEST E SERVICE WORKER -->
   <script>
     const manifest = {
       name: "BRASA - Gestão de Extintores",
@@ -1077,7 +1084,7 @@
     let inspecoesAgrupadas = {}; 
     let numeroExtintorAtual = '';
     
-    // Variáveis para controlar se está editando uma inspeção já existente no mês
+    // Controle de substituição de inspeção
     let inspecaoIdExistente = null;
     let urlFotoInteiroExistente = null;
     let urlFotoSeloExistente = null;
@@ -1435,6 +1442,7 @@
             </button>
 
             <div class="acoes-card">
+              <button class="btn-card-acao historico" data-historico="${e.id}" data-numero="${e.numero}">📜 Histórico</button>
               <button class="btn-card-acao editar" data-editar="${e.id}">✏️ Editar</button>
               <button class="btn-card-acao excluir" data-excluir="${e.id}" data-numero="${e.numero}">🗑️ Excluir</button>
             </div>
@@ -1643,7 +1651,7 @@
       await carregarExtintores();
     });
 
-    // ---------- EXCLUIR ----------
+    // ---------- EXCLUIR EXTINTOR ----------
     async function excluirExtintor(id, numero) {
       if (!confirm(`Tem certeza que deseja excluir o extintor ${numero}? Esta ação não pode ser desfeita.`)) {
         return;
@@ -1662,20 +1670,17 @@
 
     // ---------- INSPEÇÃO (VERIFICAÇÃO DE MÊS DUPLICADO) ----------
     
-    // Função chamada ao clicar em "Fazer Inspeção"
     async function abrirInspecao(id, numero) {
       extintorEmInspecao = id;
       document.getElementById('insp-numero').textContent = numero;
       document.getElementById('form-inspecao').reset();
 
-      // Define o mês atual como padrão
       const hoje = new Date();
       const mesAtual = `${hoje.getFullYear()}-${String(hoje.getMonth()+1).padStart(2,'0')}`;
       document.getElementById('insp-mes').value = mesAtual;
 
       document.querySelectorAll('#checklist input[type=checkbox]').forEach(c => c.checked = true);
 
-      // Limpa previews e variáveis de controle
       inspecaoIdExistente = null;
       urlFotoInteiroExistente = null;
       urlFotoSeloExistente = null;
@@ -1693,16 +1698,13 @@
 
       abrirModal('modal-inspecao');
       
-      // Verifica se já existe no mês atual
       await verificarMesExistente();
     }
 
-    // Função para checar no banco se o mês já foi inspecionado
     window.verificarMesExistente = async function() {
       const mesRef = document.getElementById('insp-mes').value;
       if (!mesRef || !extintorEmInspecao) return;
 
-      // Busca no banco
       const { data, error } = await supabase
         .from('inspecoes')
         .select('*')
@@ -1715,10 +1717,25 @@
       }
 
       if (data && data.length > 0) {
-        // Já existe! Pergunta se quer substituir.
-        const confirmar = confirm(`Já existe uma inspeção registrada para este mês (${mesRef}).\n\nDeseja substituir a inspeção anterior?\nAs fotos antigas serão apagadas.`);
+        // Já existe! Abre o modal bonito de confirmação
+        abrirModal('modal-confirmar-substituicao');
         
-        if (confirmar) {
+        // Configura os botões do modal de confirmação
+        document.getElementById('btn-cancelar-substituicao').onclick = () => {
+          fecharModal('modal-confirmar-substituicao');
+          document.getElementById('insp-mes').value = '';
+          inspecaoIdExistente = null;
+          urlFotoInteiroExistente = null;
+          urlFotoSeloExistente = null;
+          document.getElementById('insp-id-existente').value = '';
+          document.getElementById('btn-salvar-inspecao').textContent = 'Registrar Inspeção';
+          document.getElementById('preview-inteiro').classList.remove('visivel');
+          document.getElementById('preview-selo').classList.remove('visivel');
+          toast('Selecione outro mês para inspecionar.', 'erro');
+        };
+
+        document.getElementById('btn-confirmar-substituicao').onclick = () => {
+          fecharModal('modal-confirmar-substituicao');
           const inspAntiga = data[0];
           inspecaoIdExistente = inspAntiga.id;
           urlFotoInteiroExistente = inspAntiga.foto_inteiro_url;
@@ -1727,7 +1744,6 @@
           document.getElementById('insp-id-existente').value = inspAntiga.id;
           document.getElementById('btn-salvar-inspecao').textContent = 'Substituir Inspeção';
           
-          // Preenche o formulário com os dados antigos para facilitar
           if (inspAntiga.checklist) {
             document.getElementById('ck-lacre').checked = inspAntiga.checklist.lacre_ok ?? true;
             document.getElementById('ck-manometro').checked = inspAntiga.checklist.manometro_ok ?? true;
@@ -1739,7 +1755,6 @@
           }
           document.getElementById('f-insp-obs').value = inspAntiga.observacoes || '';
           
-          // Mostra as fotos antigas (o usuário pode trocar)
           if (urlFotoInteiroExistente) {
             const img1 = document.getElementById('preview-inteiro');
             img1.src = urlFotoInteiroExistente;
@@ -1752,20 +1767,9 @@
           }
           
           toast('⚠️ Você está substituindo uma inspeção existente.', 'sucesso');
-        } else {
-          // Se não quiser substituir, limpa o mês e avisa
-          document.getElementById('insp-mes').value = '';
-          inspecaoIdExistente = null;
-          urlFotoInteiroExistente = null;
-          urlFotoSeloExistente = null;
-          document.getElementById('insp-id-existente').value = '';
-          document.getElementById('btn-salvar-inspecao').textContent = 'Registrar Inspeção';
-          document.getElementById('preview-inteiro').classList.remove('visivel');
-          document.getElementById('preview-selo').classList.remove('visivel');
-          toast('Selecione outro mês para inspecionar.', 'erro');
-        }
+        };
+
       } else {
-        // Não existe, pode registrar nova
         inspecaoIdExistente = null;
         urlFotoInteiroExistente = null;
         urlFotoSeloExistente = null;
@@ -1816,7 +1820,6 @@
     async function deletarFotoAntiga(url) {
       if (!url) return;
       try {
-        // Extrai o caminho do arquivo da URL (ex: id/timestamp-foto.jpg)
         const partes = url.split('/inspecoes/');
         if (partes.length > 1) {
           const caminho = partes[1];
@@ -1830,7 +1833,6 @@
     document.getElementById('form-inspecao').addEventListener('submit', async (e) => {
       e.preventDefault();
 
-      // Validações: precisa ter arquivo novo OU já ter uma foto existente salva
       if (!arquivoFotoInteiro && !urlFotoInteiroExistente) {
         document.getElementById('upload-inteiro').classList.add('obrigatorio-faltando');
         toast('⚠️ Adicione a foto do extintor inteiro', 'erro');
@@ -1850,7 +1852,6 @@
         let finalUrlInteiro = urlFotoInteiroExistente;
         let finalUrlSelo = urlFotoSeloExistente;
 
-        // Se o usuário enviou uma foto NOVA, faz o upload e apaga a antiga
         if (arquivoFotoInteiro) {
           finalUrlInteiro = await uploadFoto(arquivoFotoInteiro, extintorEmInspecao);
           if (urlFotoInteiroExistente) {
@@ -1893,14 +1894,12 @@
         let error;
 
         if (inspecaoIdExistente) {
-          // Atualiza a inspeção existente (economiza espaço)
           const { error: err } = await supabase
             .from('inspecoes')
             .update(novaInspecao)
             .eq('id', inspecaoIdExistente);
           error = err;
         } else {
-          // Insere nova inspeção
           const { error: err } = await supabase.from('inspecoes').insert(novaInspecao);
           error = err;
         }
@@ -2056,11 +2055,48 @@
             ${i.observacoes ? `<div style="font-size:.85rem; margin-bottom:12px; background:#f0f9ff; padding:10px; border-radius:8px; border-left:3px solid #0284c7;"><strong>💬 Obs:</strong> ${i.observacoes}</div>` : ''}
             
             ${fotosHtml}
+            
+            <div style="margin-top: 16px; text-align: right; border-top: 1px solid var(--cinza-borda); padding-top: 12px;">
+              <button class="btn-acao excluir" style="padding: 8px 16px; font-size: 0.85rem;" onclick="excluirInspecao('${i.id}', '${ref}')">
+                🗑️ Excluir Inspeção
+              </button>
+            </div>
           </div>
         `;
       }).join('');
 
       abrirModal('modal-detalhe-historico');
+    }
+
+    // ---------- EXCLUIR INSPEÇÃO DO HISTÓRICO ----------
+    window.excluirInspecao = async function(id, ref) {
+      if (!confirm("Tem certeza que deseja excluir esta inspeção? As fotos também serão apagadas permanentemente.")) {
+        return;
+      }
+
+      // Pega a inspeção para deletar as fotos do storage
+      const insp = inspecoesAgrupadas[ref].find(i => i.id === id);
+      
+      if (insp) {
+        if (insp.foto_inteiro_url) await deletarFotoAntiga(insp.foto_inteiro_url);
+        if (insp.foto_selo_url) await deletarFotoAntiga(insp.foto_selo_url);
+      }
+
+      const { error } = await supabase.from('inspecoes').delete().eq('id', id);
+      
+      if (error) {
+        toast('Erro ao excluir inspeção: ' + error.message, 'erro');
+        return;
+      }
+
+      toast('🗑️ Inspeção excluída com sucesso!');
+      fecharModal('modal-detalhe-historico');
+      
+      // Atualiza a tela de histórico (se ainda estiver aberta)
+      if (document.getElementById('modal-historico').classList.contains('aberto')) {
+        const numero = document.getElementById('hist-numero').textContent;
+        abrirHistorico(extintorEmInspecao, numero);
+      }
     }
 
     // ---------- GERAR PDF DO MÊS ----------
