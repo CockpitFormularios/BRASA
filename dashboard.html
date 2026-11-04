@@ -572,7 +572,6 @@
       }
       .hist-lista li { font-size: 0.75rem; padding: 2px 6px; }
       
-      /* AQUI ESTÁ O SEGREDO PARA AS FOTOS CABEREM NA PÁGINA */
       .hist-fotos { 
         display: flex; gap: 10px; justify-content: space-between; 
       }
@@ -581,8 +580,8 @@
       }
       .hist-fotos img { 
         width: 100%; 
-        height: 160px; /* Tamanho fixo e reduzido para caber em 1 página */
-        object-fit: cover; /* Preenche o espaço sem distorcer */
+        height: 160px;
+        object-fit: cover; 
         border-radius: 6px; 
       }
       .hist-fotos .label-foto { padding: 4px; font-size: 0.7rem; }
@@ -1034,6 +1033,23 @@
     </div>
   </div>
 
+  <!-- ============ MODAL: CONFIRMAÇÃO DE EXCLUSÃO ============ -->
+  <div class="modal-overlay" id="modal-confirmar-exclusao">
+    <div class="modal confirmacao">
+      <div class="modal-header" style="justify-content: center; border-bottom: none; padding-bottom: 10px;">
+        <h3 style="font-size: 1.3rem;">🗑️ Excluir Inspeção</h3>
+      </div>
+      <div class="modal-body" style="text-align: center; font-size: 0.95rem;">
+        <p style="margin-bottom: 12px;">Tem certeza que deseja excluir esta inspeção?</p>
+        <p style="font-size: 0.85rem; color: var(--texto-suave);">As fotos também serão apagadas permanentemente. Esta ação não pode ser desfeita.</p>
+      </div>
+      <div class="modal-footer" style="justify-content: center; border-top: none; padding-top: 0;">
+        <button type="button" class="btn-secundario" id="btn-cancelar-exclusao" style="flex: 1;">Cancelar</button>
+        <button type="button" class="btn-primario" id="btn-confirmar-exclusao" style="flex: 1; background: var(--vermelho);">Sim, Excluir</button>
+      </div>
+    </div>
+  </div>
+
   <!-- ÁREA INVISÍVEL PARA GERAR O PDF -->
   <div id="area-impressao-pdf" style="display: none;">
     <!-- O conteúdo HTML para o PDF é injetado aqui via JS -->
@@ -1122,6 +1138,10 @@
     let inspecaoIdExistente = null;
     let urlFotoInteiroExistente = null;
     let urlFotoSeloExistente = null;
+
+    // Controle de exclusão
+    let idInspecaoParaExcluir = null;
+    let refMesParaExcluir = null;
 
     // ---------- UTILITÁRIOS ----------
     function diffDias(data) {
@@ -2089,7 +2109,7 @@
             ${fotosHtml}
             
             <div style="margin-top: 16px; text-align: right; border-top: 1px solid var(--cinza-borda); padding-top: 12px;">
-              <button class="btn-acao excluir" style="padding: 8px 16px; font-size: 0.85rem;" onclick="excluirInspecao('${i.id}', '${ref}')">
+              <button class="btn-acao excluir" style="padding: 8px 16px; font-size: 0.85rem;" onclick="solicitarExclusaoInspecao('${i.id}', '${ref}')">
                 🗑️ Excluir Inspeção
               </button>
             </div>
@@ -2100,20 +2120,33 @@
       abrirModal('modal-detalhe-historico');
     }
 
-    // ---------- EXCLUIR INSPEÇÃO DO HISTÓRICO ----------
-    window.excluirInspecao = async function(id, ref) {
-      if (!confirm("Tem certeza que deseja excluir esta inspeção? As fotos também serão apagadas permanentemente.")) {
-        return;
-      }
+    // ---------- EXCLUIR INSPEÇÃO DO HISTÓRICO (MODAL) ----------
+    window.solicitarExclusaoInspecao = function(id, ref) {
+      idInspecaoParaExcluir = id;
+      refMesParaExcluir = ref;
+      abrirModal('modal-confirmar-exclusao');
+    }
 
-      const insp = inspecoesAgrupadas[ref].find(i => i.id === id);
+    // Configuração dos botões do Modal de Exclusão
+    document.getElementById('btn-cancelar-exclusao').onclick = () => {
+      fecharModal('modal-confirmar-exclusao');
+      idInspecaoParaExcluir = null;
+      refMesParaExcluir = null;
+    };
+
+    document.getElementById('btn-confirmar-exclusao').onclick = async () => {
+      if (!idInspecaoParaExcluir || !refMesParaExcluir) return;
+
+      fecharModal('modal-confirmar-exclusao');
+      
+      const insp = inspecoesAgrupadas[refMesParaExcluir].find(i => i.id === idInspecaoParaExcluir);
       
       if (insp) {
         if (insp.foto_inteiro_url) await deletarFotoAntiga(insp.foto_inteiro_url);
         if (insp.foto_selo_url) await deletarFotoAntiga(insp.foto_selo_url);
       }
 
-      const { error } = await supabase.from('inspecoes').delete().eq('id', id);
+      const { error } = await supabase.from('inspecoes').delete().eq('id', idInspecaoParaExcluir);
       
       if (error) {
         toast('Erro ao excluir inspeção: ' + error.message, 'erro');
@@ -2127,7 +2160,10 @@
         const numero = document.getElementById('hist-numero').textContent;
         abrirHistorico(extintorEmInspecao, numero);
       }
-    }
+      
+      idInspecaoParaExcluir = null;
+      refMesParaExcluir = null;
+    };
 
     // ---------- GERAR PDF DO MÊS ----------
     window.gerarPDFMes = function(ref) {
