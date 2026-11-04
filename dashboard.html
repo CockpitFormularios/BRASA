@@ -184,10 +184,62 @@
     /* ---------- CARDS ---------- */
     .card { background: #fff; border-radius: 12px; padding: 20px; box-shadow: var(--sombra); }
     .card h2 { font-size: 1rem; font-weight: 600; margin-bottom: 16px; }
-    .grid-meio { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
-    .chart-wrap { position: relative; height: 240px; }
+    
+    /* Mudança do Grid para Gráfico full e dois cards embaixo */
+    .grid-topo { display: grid; grid-template-columns: 1fr; gap: 24px; }
+    .grid-alertas { display: grid; grid-template-columns: 2fr 1fr; gap: 24px; }
+    
+    .chart-wrap { position: relative; height: 260px; width: 100%; max-width: 400px; margin: 0 auto; }
 
-    /* ---------- QR CODE E ALERTAS ---------- */
+    /* ---------- ALERTAS (PRÓXIMOS A VENCER) ---------- */
+    .alerta-lista {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      max-height: 250px;
+      overflow-y: auto;
+      padding-right: 4px;
+    }
+    .alerta-lista li {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px;
+      background: #fff8f8;
+      border: 1px solid #fee2e2;
+      border-radius: 8px;
+      font-size: 0.9rem;
+    }
+    .alerta-lista li.vencido-alerta {
+      background: #fef2f2;
+      border-color: #fecaca;
+    }
+    .alerta-lista li span.nome {
+      font-weight: 700;
+      color: var(--escuro);
+    }
+    .alerta-lista li span.nome small {
+      display: block;
+      font-weight: 500;
+      color: var(--texto-suave);
+      font-size: 0.8rem;
+      margin-top: 2px;
+    }
+    .alerta-lista li span.dias {
+      background: var(--laranja);
+      color: #fff;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+    .alerta-lista li span.dias.vermelho {
+      background: var(--vermelho);
+    }
+
+    /* ---------- QR CODE FLUTUANTE ---------- */
     .qr-container {
       display: flex;
       flex-direction: column;
@@ -196,48 +248,20 @@
       background: #fafafa;
       border: 1px dashed var(--cinza-borda);
       border-radius: 12px;
-      padding: 16px;
-      margin-bottom: 16px;
+      padding: 24px;
       text-align: center;
+      height: 100%;
     }
     .qr-container img {
-      width: 130px;
-      height: 130px;
+      width: 160px;
+      height: 160px;
       border-radius: 8px;
-      margin-bottom: 8px;
+      margin-bottom: 12px;
     }
     .qr-container p {
-      font-size: 0.8rem;
+      font-size: 0.9rem;
       color: var(--texto-suave);
       font-weight: 600;
-    }
-    .alerta-lista {
-      list-style: none;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-    .alerta-lista li {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 10px;
-      background: #fff8f8;
-      border: 1px solid #fee2e2;
-      border-radius: 8px;
-      font-size: 0.85rem;
-    }
-    .alerta-lista li span.nome {
-      font-weight: 700;
-      color: var(--escuro);
-    }
-    .alerta-lista li span.dias {
-      background: var(--vermelho);
-      color: #fff;
-      padding: 2px 8px;
-      border-radius: 6px;
-      font-size: 0.75rem;
-      font-weight: 700;
     }
 
     /* ---------- TABELA (DESKTOP) ---------- */
@@ -684,7 +708,7 @@
       .busca { max-width: 100%; order: 3; flex-basis: 100%; margin-bottom: 6px; }
       .btn-novo-extintor-text { display: none; }
       
-      .grid-meio { grid-template-columns: 1fr; }
+      .grid-alertas { grid-template-columns: 1fr; }
       .conteudo-principal { padding: 14px; gap: 16px; }
       
       .tabela-wrap { display: none; }
@@ -799,26 +823,30 @@
           </div>
         </div>
 
-        <div class="grid-meio" style="margin-bottom: 16px;">
-          <!-- Coluna 1: Gráfico -->
+        <div class="grid-topo" style="margin-bottom: 16px;">
+          <!-- Gráfico Ocupando a linha toda -->
           <div class="card">
-            <h2>📊 Semáforo de Vencimentos</h2>
+            <h2 style="text-align: center;">📊 Semáforo de Vencimentos</h2>
             <div class="chart-wrap"><canvas id="grafico"></canvas></div>
           </div>
-          
-          <!-- Coluna 2: QR Code e Próximos a Vencer -->
-          <div class="card" style="display: flex; flex-direction: column;">
-            <h2>📱 Acesso Rápido</h2>
-            
+        </div>
+
+        <div class="grid-alertas" style="margin-bottom: 16px;">
+          <!-- ALERTAS: PRÓXIMOS A VENCER E VENCIDOS -->
+          <div class="card">
+            <h2>⚠️ Alertas de Vencimento (Vencidos e Próximos 30 dias)</h2>
+            <ul class="alerta-lista" id="lista-alertas">
+              <li style="justify-content: center; color: var(--texto-suave);">Carregando alertas...</li>
+            </ul>
+          </div>
+
+          <!-- QR CODE FLUTUANTE -->
+          <div class="card">
             <div class="qr-container">
-              <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://vludpyhesuyajwqmtlvs.supabase.co" alt="QR Code para Inspeção" id="qr-code-img">
+              <h2 style="color: var(--vermelho); margin-bottom: 10px;">📱 Acesso Rápido</h2>
+              <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https://vludpyhesuyajwqmtlvs.supabase.co" alt="QR Code para Inspeção" id="qr-code-img">
               <p>Aponte a câmera para ir à aba de Inspeção</p>
             </div>
-
-            <h2 style="margin-top: 10px;">⚠️ Próximos a Vencer (30 dias)</h2>
-            <ul class="alerta-lista" id="lista-proximos-vencer">
-              <li style="justify-content: center; color: var(--texto-suave);">Nenhum extintor vence nos próximos 30 dias.</li>
-            </ul>
           </div>
         </div>
 
@@ -1321,7 +1349,7 @@
     function renderizarTudo() {
       renderizarKPIs();
       renderizarGrafico();
-      renderizarProximosVencer();
+      renderizarAlertas();
       renderizarTabela();
       renderizarCardsMobile();
       renderizarCardsInspecao();
@@ -1383,28 +1411,47 @@
       });
     }
 
-    // ---------- NOVO CARD: PRÓXIMOS A VENCER ----------
-    function renderizarProximosVencer() {
-      const ul = document.getElementById('lista-proximos-vencer');
+    // ---------- NOVO CARD: ALERTAS DE VENCIMENTO E PRÓXIMOS ----------
+    function renderizarAlertas() {
+      const ul = document.getElementById('lista-alertas');
       
-      // Pega os extintores que vencem entre hoje e daqui a 30 dias
-      const proximos = extintores.filter(e => {
+      // Pega os vencidos E os que vencem nos próximos 30 dias
+      const alertas = extintores.filter(e => {
         const dias = diffDias(e.data_validade);
-        return e.status !== 'descartado' && dias >= 0 && dias <= 30;
+        return e.status !== 'descartado' && dias <= 30;
       }).sort((a, b) => diffDias(a.data_validade) - diffDias(b.data_validade));
 
-      if (proximos.length === 0) {
-        ul.innerHTML = '<li style="justify-content: center; color: var(--texto-suave);">Nenhum extintor vence nos próximos 30 dias.</li>';
+      if (alertas.length === 0) {
+        ul.innerHTML = '<li style="justify-content: center; color: var(--texto-suave);">Nenhum extintor vencido ou a vencer nos próximos 30 dias.</li>';
         return;
       }
 
-      ul.innerHTML = proximos.map(e => {
+      ul.innerHTML = alertas.map(e => {
         const dias = diffDias(e.data_validade);
-        const labelDias = dias === 0 ? 'Hoje' : `Em ${dias} dias`;
+        
+        let labelDias = '';
+        let classeDias = '';
+
+        if (dias < 0) {
+          labelDias = `Vencido há ${Math.abs(dias)} dias`;
+          classeDias = 'vermelho';
+        } else if (dias === 0) {
+          labelDias = 'Vence Hoje';
+          classeDias = 'vermelho';
+        } else {
+          labelDias = `Vence em ${dias} dias`;
+          classeDias = '';
+        }
+
+        const classLi = dias < 0 ? 'vencido-alerta' : '';
+
         return `
-          <li>
-            <span class="nome">Nº ${e.numero} - ${e.setor || 'S/ Local'}</span>
-            <span class="dias">${labelDias}</span>
+          <li class="${classLi}">
+            <span class="nome">
+              🧯 Nº ${e.numero} - ${e.setor || 'S/ Local'}
+              <small>${e.tipo}</small>
+            </span>
+            <span class="dias ${classeDias}">${labelDias}</span>
           </li>
         `;
       }).join('');
