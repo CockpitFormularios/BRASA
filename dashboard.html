@@ -13,7 +13,6 @@
   <meta name="apple-mobile-web-app-title" content="BRASA" />
   <link rel="apple-touch-icon" href="https://vludpyhesuyajwqmtlvs.supabase.co/storage/v1/object/public/LOGO/iconeBRASA.png" />
   <link rel="icon" type="image/png" href="https://vludpyhesuyajwqmtlvs.supabase.co/storage/v1/object/public/LOGO/iconeBRASA.png" />
-  <link rel="manifest" id="manifest-link" />
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   
@@ -1213,47 +1212,21 @@
     <img src="" alt="Zoom da Foto" id="lightbox-img" />
   </div>
 
-  <!-- SCRIPT PARA CRIAR MANIFEST (PWA BÁSICO) -->
-  <script>
-    const manifest = {
-      name: "BRASA - Gestão de Extintores",
-      short_name: "BRASA",
-      start_url: window.location.href,
-      display: "standalone",
-      background_color: "#ffffff",
-      theme_color: "#e63946",
-      icons: [
-        {
-          src: "https://vludpyhesuyajwqmtlvs.supabase.co/storage/v1/object/public/LOGO/iconeBRASA.png",
-          sizes: "192x192",
-          type: "image/png",
-          purpose: "any maskable"
-        },
-        {
-          src: "https://vludpyhesuyajwqmtlvs.supabase.co/storage/v1/object/public/LOGO/iconeBRASA.png",
-          sizes: "512x512",
-          type: "image/png",
-          purpose: "any maskable"
-        }
-      ]
-    };
-    const stringManifest = JSON.stringify(manifest);
-    const blob = new Blob([stringManifest], {type: 'application/json'});
-    const manifestURL = URL.createObjectURL(blob);
-    document.querySelector('#manifest-link').setAttribute('href', manifestURL);
-  </script>
-
   <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 
+    // Inicializa o cliente Supabase
     const supabase = createClient(
       'https://vludpyhesuyajwqmtlvs.supabase.co',
       'sb_publishable_X-uj41aebGg54ezG85Ffxw_JUz7S5wE'
     );
 
-    // ---------- AUTENTICAÇÃO ----------
+    // ---------- 1. AUTENTICAÇÃO (PRIMEIRO PASSO) ----------
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) { window.location.href = 'index.html'; throw new Error('Não autenticado'); }
+    if (!user) { 
+      window.location.href = 'index.html'; 
+      throw new Error('Não autenticado'); 
+    }
 
     document.getElementById('email').textContent = user.email;
     document.getElementById('avatar').textContent = user.email.substring(0, 2).toUpperCase();
