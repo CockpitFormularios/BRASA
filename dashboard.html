@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>BRASA — Dashboard</title>
   
-  <!-- CONFIGURAÇÃO PWA -->
+  <!-- CONFIGURAÇÃO PWA (Apenas metadados visuais) -->
   <meta name="theme-color" content="#e63946" />
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -1221,7 +1221,7 @@
       'sb_publishable_X-uj41aebGg54ezG85Ffxw_JUz7S5wE'
     );
 
-    // ---------- 1. AUTENTICAÇÃO (PRIMEIRO PASSO) ----------
+    // ---------- 1. AUTENTICAÇÃO (PRIMEIRO PASSO E OBRIGATÓRIO) ----------
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) { 
       window.location.href = 'index.html'; 
